@@ -1,6 +1,6 @@
 # :man_technologist: Brian Walsh
 
-Working as a VP/Dir of SWE at <a href="https://www.NationalGrid.com/"> <b>NationalGrid.com</b></a> in the Twin Cities area (of Minneapolis-StPaul Minnesota). I  previously worked at <a href="https://www.microsoft.com/"> <b>Microsoft</b></a>,<a href="https://www.usbank.com/"> <b>U.S. Bank</b></a>,<a href="https://www.samsung.com/"> <b>Samsung</b></a>,<a href="https://www.digitalriver.com/"> <b>Digital River</b></a>,<a href="https://www.IBM.com/"> <b>IBM</b></a>, and <a href="https://http://www.Raytheon.com/"> <b>Raytheon</b></a>.
+Working as a VP/Dir of SWE at <a href="https://www.NationalGrid.com/"> <b>National Grid</b></a> in the Twin Cities area (of Minneapolis-StPaul Minnesota). I  previously worked at <a href="https://www.microsoft.com/"> <b>Microsoft</b></a>,<a href="https://www.usbank.com/"> <b>U.S. Bank</b></a>,<a href="https://www.samsung.com/"> <b>Samsung</b></a>,<a href="https://www.digitalriver.com/"> <b>Digital River</b></a>,<a href="https://www.IBM.com/"> <b>IBM</b></a>, and <a href="https://http://www.Raytheon.com/"> <b>Raytheon</b></a>.
 
 ## About Me
 
