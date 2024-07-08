@@ -25,7 +25,7 @@ A typical tech nerd with maps of places I wish I lived and pictures of memories 
 ## Let's Connect -
 
 [![Twitter Badge](https://img.shields.io/badge/-@brijwalsh-1ca0f1?style=flat-square&labelColor=1ca0f1&logo=twitter&logoColor=white&link=https://twitter.com/brijwalsh)](https://twitter.com/brijwalsh) 
-[![Linkedin Badge](https://img.shields.io/badge/-brijwalsh-blue?style=flat-square&logo=Linkedin&logoColor=white&link=https://www.linkedin.com/in/brijwalsh/)](https://www.linkedin.com/in/brijwalsh)
+[![Linkedin Badge](https://img.shields.io/badge/-brijwalsh-blue?style=flat-square&logo=Linkedin&logoColor=white&link=https://www.linkedin.com/in/brwalsh/)](https://www.linkedin.com/in/brwalsh)
 [![Medium Badge](https://img.shields.io/badge/-@brijwalsh-03a57a?style=flat-square&labelColor=000000&logo=Medium&link=https://medium.com/@brijwalsh)](https://medium.com/@brijwalsh)
 [![Gmail Badge](https://img.shields.io/badge/-walshbrianj@gmail.com-c14438?style=flat-square&logo=Gmail&logoColor=white&link=mailto:walshbrianj@gmail.com)](mailto:walshbrianj@gmail.com)
 
