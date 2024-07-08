@@ -18,6 +18,8 @@ A typical tech nerd with maps of places I wish I lived and pictures of memories 
 
 - 😄 Pronouns: **He**/**Him**
 
+- ⚡ <a href="https://www.brianwalsh.carrd.co"> <b>Visit my website via carrd</b></a>
+
 - ⚡ <a href="https://linktre.ee/bwalsh"> <b>Linktr.ee</b></a>
 
 ## Let's Connect -
