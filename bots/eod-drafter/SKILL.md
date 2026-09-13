@@ -57,6 +57,16 @@ the draft. Brian edits and reposts to the target channel himself.
      unknown and quarantine (fail-closed). Better to draft a stub than
      leak a client meeting body because Granola happened to return
      partial metadata.
+  5. **Alias-based related-to-client signal.** Meeting `title`,
+     `summary`, or Granola `notes` contains any `title_hint` from the
+     client alias table, case-insensitive. Built-in defaults:
+     `goengen.com` → `enGen`, `EnGen`; `natera.com` → `Natera`,
+     `Panorama`, `Signatera`, `Prospera`. Extend via
+     `$CLIENT_TITLE_ALIASES` (JSON object). A marketing-name title
+     like `enGen Sync — Nov 2026` or an internal-only
+     `Prep for enGen QBR` quarantines even when every attendee is
+     `@liatr.io`. Malformed `$CLIENT_TITLE_ALIASES` is fail-closed:
+     DM Brian and exit; do not run with a broken DLP table.
 
   Quarantined meetings are surfaced to the LLM only as
   `title=Client sync (<domain>)` + Granola link + `quarantined: true`.
@@ -82,6 +92,12 @@ Required MCP + env:
   (e.g. `claude-sonnet-5`, `gpt-5.6-medium`)
 - `$GATEWAY_TASK_TYPE` — optional, defaults `eod-draft`
 - `$CLIENT_DOMAINS` — optional, comma-sep, defaults `natera.com,goengen.com`
+- `$CLIENT_TITLE_ALIASES` — optional JSON object mapping a client
+  domain to extra title/summary/notes hint strings, e.g.
+  `{"goengen.com": ["enGen", "EnGen"], "acme.com": ["Acme"]}`.
+  Built-in defaults already cover `goengen.com` and `natera.com`
+  (see Non-negotiables). If this var is **set** and is not a JSON
+  object of `{domain: [str, ...]}`, DM Brian and exit — fail-closed.
 
 If any of the required entries is missing, DM Brian and exit. Do **not**
 fall through to a direct-provider API call; the gateway dependency is the
@@ -212,21 +228,64 @@ args:
 ```
 
 For each meeting, extract: `title`, `known_participants` (each with
-`email` and `name`), `summary`, `next_steps`, `granola_link`. `summary` and
-`next_steps` are only forwarded to §5 if the meeting **survives** the
-quarantine in §3d.
+`email` and `name`), `summary`, `notes` (Granola text output),
+`next_steps`, `granola_link`. `notes` is a §3d quarantine signal only
+and is never forwarded to §5. `summary` and `next_steps` are only
+forwarded to §5 if the meeting **survives** the quarantine in §3d.
 
 ### 3d. Client-domain quarantine (do this before §4)
 
-Quarantine is **multi-signal, fail-closed**. Any of the following is
-enough to trigger it; the empty-participants case triggers it too, so
-Granola outages can never regress to leaking full meeting bodies.
+Quarantine is **multi-signal, fail-closed**. Any positive signal is
+enough to trigger it (attendee-domain, title-stem, folder, unknown
+attendance, **or** a title-alias hit in title/summary/notes). The
+empty-participants case triggers it too, so Granola outages can never
+regress to leaking full meeting bodies.
 
 For every Granola meeting:
 
 ```python
+import json
+
 client_domains = os.environ.get("CLIENT_DOMAINS",
                                 "natera.com,goengen.com").split(",")
+
+# Built-in marketing-name / product-name hints. Domain-stem title
+# matching ("natera", "goengen") stays in title_hit below; this table
+# is the extra aliases those stems miss (enGen ≠ goengen).
+DEFAULT_TITLE_ALIASES = {
+    "goengen.com": ["enGen", "EnGen"],
+    "natera.com": ["Natera", "Panorama", "Signatera", "Prospera"],
+}
+
+def load_title_aliases():
+    table = {d.lower(): list(hints)
+             for d, hints in DEFAULT_TITLE_ALIASES.items()}
+    raw = (os.environ.get("CLIENT_TITLE_ALIASES") or "").strip()
+    if not raw:
+        return table
+    try:
+        extra = json.loads(raw)
+    except (json.JSONDecodeError, TypeError, ValueError):
+        raise SystemExit(
+            "CLIENT_TITLE_ALIASES is not valid JSON — DM Brian and exit"
+        )
+    if not isinstance(extra, dict) or not all(
+        isinstance(k, str)
+        and isinstance(v, list)
+        and all(isinstance(h, str) for h in v)
+        for k, v in extra.items()
+    ):
+        raise SystemExit(
+            "CLIENT_TITLE_ALIASES must be "
+            '{"domain.com": ["Alias", ...]} — DM Brian and exit'
+        )
+    for domain, hints in extra.items():
+        key = domain.lower()
+        table.setdefault(key, [])
+        table[key].extend(hints)
+    return table
+
+title_aliases = load_title_aliases()
 
 def host(email):
     # split on the last @ so "foo@bar@natera.com" still lands on natera.com
@@ -253,7 +312,24 @@ folder_hit = (meeting.folder or "").lower() in {
 # fail-closed: no participants + no folder = we don't know, so we quarantine
 unknown_attendance = not participants and not folder_hit
 
-client_hit = participant_hit or title_hit or folder_hit or unknown_attendance
+# fourth signal: any title_hint from the alias table, case-insensitive,
+# in title OR summary OR Granola notes. Catches "enGen Sync — Nov 2026"
+# and internal-only "Prep for enGen QBR" (zero client attendees).
+haystack = " ".join([
+    meeting.title or "",
+    meeting.summary or "",
+    meeting.get("notes") or "",
+]).lower()
+alias_hit = any(
+    hint.lower() in haystack
+    for hints in title_aliases.values()
+    for hint in hints
+)
+
+client_hit = (
+    participant_hit or title_hit or folder_hit
+    or unknown_attendance or alias_hit
+)
 
 if client_hit:
     # dominant domain: pick the client domain that matched, else "unknown"
@@ -261,7 +337,9 @@ if client_hit:
         (d for d in client_domains
          if any(domain_hit(p.get("email", "")) and host(p["email"]).endswith(d)
                 for p in participants)
-         or d.split(".")[0] in meeting.title.lower()),
+         or d.split(".")[0] in meeting.title.lower()
+         or any(hint.lower() in haystack
+                for hint in title_aliases.get(d.lower(), []))),
         "unknown",
     )
     meeting.title = f"Client sync ({dominant})"

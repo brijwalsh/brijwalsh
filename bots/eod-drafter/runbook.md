@@ -21,6 +21,16 @@
   - `GATEWAY_MODEL` — e.g. `claude-sonnet-5`
   - `GATEWAY_TASK_TYPE` — optional, defaults `eod-draft`
   - `CLIENT_DOMAINS` — optional, default `natera.com,goengen.com`
+  - `CLIENT_TITLE_ALIASES` — optional JSON object mapping a client
+    domain to extra title/summary/notes hint strings. Format:
+    `{"domain.com": ["Alias1", "Alias2"]}`. Example:
+    `{"goengen.com": ["enGen", "EnGen"], "acme.com": ["Acme"]}`.
+    Built-in defaults already cover the two known clients
+    (`goengen.com` → `enGen`/`EnGen`; `natera.com` → `Natera`/
+    `Panorama`/`Signatera`/`Prospera`). Set this only to extend that
+    table. If the var is set and is not valid JSON of that shape,
+    preflight aborts (fail-closed) — do not run with a broken DLP
+    table.
 - **Model in the Cursor agent card:** any (the skill calls the gateway
   itself; the outer agent model just parses SKILL.md and orchestrates).
 
