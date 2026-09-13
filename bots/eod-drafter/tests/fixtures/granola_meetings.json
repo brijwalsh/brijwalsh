@@ -1,0 +1,130 @@
+{
+  "_note": "Synthetic fixture. FAKE names/emails throughout (alice/bob/charlie/dana/erin/frank pattern from the task brief). No real client employees, no real transcript content.",
+  "meetings": [
+    {
+      "meeting_id": "gr-1001",
+      "title": "Weekly Sync \u2014 AI Gateway",
+      "folder": null,
+      "start_time": "2026-09-15T09:00:00-05:00",
+      "end_time": "2026-09-15T09:30:00-05:00",
+      "duration_minutes": 30,
+      "known_participants": [
+        { "name": "Brian Walsh", "email": "brian@liatrio.com" },
+        { "name": "Alice Rivera", "email": "alice@natera.com" }
+      ],
+      "summary": "Reviewed gateway retry middleware rollout timeline with Natera stakeholders.",
+      "next_steps": "Send updated rollout doc to Alice by Friday.",
+      "granola_link": "https://notes.granola.ai/d/gr-1001",
+      "_case": "Rule 1 (participant email host match) -> quarantined."
+    },
+    {
+      "meeting_id": "gr-1002",
+      "title": "1:1 \u2014 Delivery Lead Check-in",
+      "folder": null,
+      "start_time": "2026-09-15T10:00:00-05:00",
+      "end_time": "2026-09-15T10:30:00-05:00",
+      "duration_minutes": 30,
+      "known_participants": [
+        { "name": "Dave Chen", "email": "dave@natera.com", "role": "host" },
+        { "name": "Charlie Osei", "email": "charlie@liatrio.com" }
+      ],
+      "summary": "Dave hosted from the client side to walk through onboarding blockers.",
+      "next_steps": "Charlie to follow up with the access-request ticket.",
+      "granola_link": "https://notes.granola.ai/d/gr-1002",
+      "_case": "Client-domain host is itself a known_participants entry -> Rule 1 (participant email host match) -> quarantined. SKILL.md does not have a separate 'host' concept; the host is just another participant, so this is the same rule as gr-1001, exercised with the client on the host side."
+    },
+    {
+      "meeting_id": "gr-1003",
+      "title": "Sprint Retro",
+      "folder": null,
+      "start_time": "2026-09-15T11:00:00-05:00",
+      "end_time": "2026-09-15T11:45:00-05:00",
+      "duration_minutes": 45,
+      "known_participants": [
+        { "name": "Charlie Osei", "email": "charlie@liatrio.com" },
+        { "name": "Erin Vasquez", "email": "erin@liatrio.com" }
+      ],
+      "summary": "Team retro. Action item: reach out to contact@natera.com to reschedule the demo.",
+      "next_steps": "Erin to email contact@natera.com with new demo times.",
+      "granola_link": "https://notes.granola.ai/d/gr-1003",
+      "_case": "TODO(#eod-quarantine-gaps-0428): all-internal known_participants, no folder, title has no client stem \u2014 but summary/next_steps mention a client-domain email address (contact@natera.com). SKILL.md's four quarantine signals (participant email host, title stem, folder, empty-attendance fail-closed) never inspect summary/next_steps text, so this meeting is NOT quarantined by the CURRENT SKILL.md. Expected to flip to quarantined once #eod-quarantine-gaps-0428 adds content-based scanning of summary/next_steps."
+    },
+    {
+      "meeting_id": "gr-1004",
+      "title": "enGen QBR",
+      "folder": null,
+      "start_time": "2026-09-15T13:00:00-05:00",
+      "end_time": "2026-09-15T14:00:00-05:00",
+      "duration_minutes": 60,
+      "known_participants": [
+        { "name": "Charlie Osei", "email": "charlie@liatrio.com" },
+        { "name": "Erin Vasquez", "email": "erin@liatrio.com" }
+      ],
+      "summary": "Internal prep session ahead of the quarterly business review.",
+      "next_steps": "Finalize slide deck before Thursday.",
+      "granola_link": "https://notes.granola.ai/d/gr-1004",
+      "_case": "TODO(#eod-quarantine-gaps-0428): all-internal known_participants, no folder set. SKILL.md's title_hit only checks `d.split('.')[0]` for each CLIENT_DOMAINS entry, i.e. the literal stems `natera` and `goengen` \u2014 NOT `engen`. A title containing `enGen` therefore does not match today, so this meeting is NOT quarantined by the CURRENT SKILL.md. This is the fixture referenced in the task brief as expected to flip once #eod-quarantine-gaps-0428 tightens the title-stem match to also catch the `enGen`/`engen` short form."
+    },
+    {
+      "meeting_id": "gr-1005",
+      "title": "Backlog Grooming",
+      "folder": null,
+      "start_time": "2026-09-15T14:30:00-05:00",
+      "end_time": "2026-09-15T15:00:00-05:00",
+      "duration_minutes": 30,
+      "known_participants": [
+        { "name": "Charlie Osei", "email": "charlie@liatrio.com" },
+        { "name": "Frank Nakamura", "email": "frank@liatrio.com" }
+      ],
+      "summary": "Groomed next sprint's backlog, no client-facing items discussed.",
+      "next_steps": "Frank to split the top ticket into two.",
+      "granola_link": "https://notes.granola.ai/d/gr-1005",
+      "_case": "All-internal, no client mentions anywhere -> not quarantined. The clean-run control case."
+    },
+    {
+      "meeting_id": "gr-1006",
+      "title": "Ad-hoc Sync",
+      "folder": null,
+      "start_time": "2026-09-15T15:30:00-05:00",
+      "end_time": "2026-09-15T15:45:00-05:00",
+      "duration_minutes": 15,
+      "summary": "Granola returned partial metadata for this meeting.",
+      "next_steps": null,
+      "granola_link": "https://notes.granola.ai/d/gr-1006",
+      "_case": "Malformed on purpose: the known_participants key is entirely absent (simulates a Granola partial-metadata response). Exercises the fail-closed unknown_attendance branch -> quarantined."
+    },
+    {
+      "meeting_id": "gr-1007",
+      "title": "enGen Integration Standup",
+      "folder": "engen",
+      "start_time": "2026-09-15T16:00:00-05:00",
+      "end_time": "2026-09-15T16:20:00-05:00",
+      "duration_minutes": 20,
+      "known_participants": [
+        { "name": "Brian Walsh", "email": "brian@liatrio.com" },
+        { "name": "Bob Ferreira", "email": "bob@goengen.com" }
+      ],
+      "summary": "Reviewed integration test failures with the enGen team.",
+      "next_steps": "Bob to send updated API credentials.",
+      "granola_link": "https://notes.granola.ai/d/gr-1007",
+      "_case": "Double-hit: Rule 1 (bob@goengen.com participant) AND Rule 3 (folder == 'engen') -> quarantined. Also the goengen.com -> 'engen' client-mapping case."
+    },
+    {
+      "meeting_id": "gr-1008",
+      "title": "Cross-Client Platform Review",
+      "folder": null,
+      "start_time": "2026-09-15T16:30:00-05:00",
+      "end_time": "2026-09-15T17:15:00-05:00",
+      "duration_minutes": 45,
+      "known_participants": [
+        { "name": "Alice Rivera", "email": "alice@natera.com" },
+        { "name": "Bob Ferreira", "email": "bob@goengen.com" },
+        { "name": "Brian Walsh", "email": "brian@liatrio.com" }
+      ],
+      "summary": "Compared platform requirements across both client engagements.",
+      "next_steps": "Circulate the comparison doc to both teams separately.",
+      "granola_link": "https://notes.granola.ai/d/gr-1008",
+      "_case": "Ambiguous: both natera.com and goengen.com participants present -> quarantined (Rule 1) via either domain. For client-mapping this is the 'multiple client domains' case; see fixtures/expected_client_mapping.json for the pinned tie-break rule."
+    }
+  ]
+}

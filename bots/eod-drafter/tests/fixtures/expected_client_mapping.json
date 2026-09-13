@@ -1,0 +1,46 @@
+{
+  "_note": "Client-mapping test: maps each meeting to a workstream client key based ONLY on known_participants email domains (SKILL.md Rule 1) -- not title/folder/summary. This answers 'whose meeting is this' for the \u00a74 workstream table, which is a narrower question than quarantine eligibility, so gr-1003/gr-1004/gr-1006 map to 'none' here even though they are quarantine edge cases in expected_quarantine.json.",
+  "tie_break_rule": "Ambiguous meetings (participants spanning more than one CLIENT_DOMAINS entry) map to the client key of the alphabetically-first matching domain STRING (not the client key string). goengen.com < natera.com alphabetically, so a meeting with both domains present maps to 'engen'. This rule is arbitrary but pinned and deterministic -- see quarantine_lib.map_client().",
+  "meetings": [
+    {
+      "meeting_id": "gr-1001",
+      "client": "natera",
+      "justification": "Only alice@natera.com matches CLIENT_DOMAINS -> single match -> natera."
+    },
+    {
+      "meeting_id": "gr-1002",
+      "client": "natera",
+      "justification": "Only dave@natera.com matches -> natera."
+    },
+    {
+      "meeting_id": "gr-1003",
+      "client": "none",
+      "justification": "known_participants is charlie@liatrio.com + erin@liatrio.com only -- no client-domain participant, regardless of the client mention in the summary text (mapping is participant-domain-only, per this test's scope)."
+    },
+    {
+      "meeting_id": "gr-1004",
+      "client": "none",
+      "justification": "known_participants is all @liatrio.com -- no client-domain participant, regardless of the title."
+    },
+    {
+      "meeting_id": "gr-1005",
+      "client": "none",
+      "justification": "All participants @liatrio.com."
+    },
+    {
+      "meeting_id": "gr-1006",
+      "client": "none",
+      "justification": "known_participants is missing entirely -> no participant domains to match -> none (this is a different question than the fail-closed quarantine verdict)."
+    },
+    {
+      "meeting_id": "gr-1007",
+      "client": "engen",
+      "justification": "Only bob@goengen.com matches -> single match -> engen."
+    },
+    {
+      "meeting_id": "gr-1008",
+      "client": "engen",
+      "justification": "Both natera.com (alice) and goengen.com (bob) match -> ambiguous -> pinned tie-break picks the alphabetically-first domain string, 'goengen.com' < 'natera.com' -> engen."
+    }
+  ]
+}

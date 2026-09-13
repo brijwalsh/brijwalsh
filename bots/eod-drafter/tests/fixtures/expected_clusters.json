@@ -1,0 +1,52 @@
+{
+  "_note": "Expected output of test_clustering.py: PRs+reviews grouped by short repo name (last path segment of repository.nameWithOwner), Slack messages grouped by exact channel with a category tag derived from the channel-name prefix. known_repos/known_channels entries with zero activity are dropped from the output (see *_dropped_empty).",
+  "github": [
+    {
+      "repo": "project-ai-gateway",
+      "count": 4,
+      "justification": "3 PRs (#101, #102, #103) + 1 review (#99), all under liatrio-forge/project-ai-gateway."
+    },
+    {
+      "repo": "project-marketing-dashboard",
+      "count": 3,
+      "justification": "2 PRs (#44, #45) + 1 review (#40), all under liatrio-forge/project-marketing-dashboard."
+    },
+    {
+      "repo": "brwalsh",
+      "count": 2,
+      "justification": "1 PR (#8) + 1 review (#6), both under BriWalsh/brwalsh."
+    }
+  ],
+  "github_dropped_empty": [
+    "project-forge-migration"
+  ],
+  "slack": [
+    {
+      "channel": "#project-ai-gateway",
+      "category": "project",
+      "count": 3,
+      "justification": "3 messages; channel name starts with '#project-'."
+    },
+    {
+      "channel": "#project-marketing-dashboard",
+      "category": "project",
+      "count": 2,
+      "justification": "2 messages; channel name starts with '#project-'."
+    },
+    {
+      "channel": "#liatrio-delivery",
+      "category": "other",
+      "count": 2,
+      "justification": "2 messages; channel name matches neither '#project-' nor '#client-'."
+    },
+    {
+      "channel": "#client-natera-delivery",
+      "category": "client",
+      "count": 2,
+      "justification": "2 messages; channel name starts with '#client-'. Per SKILL.md \u00a75 rule 1, every entry in this cluster has its text stripped before the gateway call -- this fixture proves the cluster is still identified correctly even though its content never reaches the LLM."
+    }
+  ],
+  "slack_dropped_empty": [
+    "#liatrio-forge"
+  ]
+}

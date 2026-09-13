@@ -1,0 +1,75 @@
+{
+  "_note": "Synthetic fixture. Fake usernames, fake permalinks. #client-natera-delivery is included only to prove client-channel text gets stripped/filtered, per SKILL.md §3b and §5 rule 1.",
+  "known_channels": [
+    "#project-ai-gateway",
+    "#project-marketing-dashboard",
+    "#liatrio-delivery",
+    "#client-natera-delivery",
+    "#liatrio-forge"
+  ],
+  "messages": [
+    {
+      "channel": "#project-ai-gateway",
+      "user": "brian-fake",
+      "text": "Merged the retry middleware PR, moving to timeout config next",
+      "ts": "1789180800.000100",
+      "permalink": "https://liatrio-fake.slack.com/archives/C01AIGATE/p1789180800000100"
+    },
+    {
+      "channel": "#project-ai-gateway",
+      "user": "alice-fake",
+      "text": "circuit breaker PR is up for review",
+      "ts": "1789181000.000200",
+      "permalink": "https://liatrio-fake.slack.com/archives/C01AIGATE/p1789181000000200"
+    },
+    {
+      "channel": "#project-ai-gateway",
+      "user": "dana-fake",
+      "text": "auth rotation doc PR merged, thanks for the review",
+      "ts": "1789182000.000300",
+      "permalink": "https://liatrio-fake.slack.com/archives/C01AIGATE/p1789182000000300"
+    },
+    {
+      "channel": "#project-marketing-dashboard",
+      "user": "erin-fake",
+      "text": "tooltip fix is live, exporting csv next",
+      "ts": "1789183000.000400",
+      "permalink": "https://liatrio-fake.slack.com/archives/C02DASH/p1789183000000400"
+    },
+    {
+      "channel": "#project-marketing-dashboard",
+      "user": "brian-fake",
+      "text": "reviewing the data-fetch refactor now",
+      "ts": "1789184000.000500",
+      "permalink": "https://liatrio-fake.slack.com/archives/C02DASH/p1789184000000500"
+    },
+    {
+      "channel": "#liatrio-delivery",
+      "user": "frank-fake",
+      "text": "standup notes posted in the doc, nothing blocking",
+      "ts": "1789185000.000600",
+      "permalink": "https://liatrio-fake.slack.com/archives/C03DELIV/p1789185000000600"
+    },
+    {
+      "channel": "#liatrio-delivery",
+      "user": "brian-fake",
+      "text": "syncing with delivery leads on Q4 roadmap this week",
+      "ts": "1789186000.000700",
+      "permalink": "https://liatrio-fake.slack.com/archives/C03DELIV/p1789186000000700"
+    },
+    {
+      "channel": "#client-natera-delivery",
+      "user": "brian-fake",
+      "text": "confirmed the go-live date with the natera team, details in thread",
+      "ts": "1789187000.000800",
+      "permalink": "https://liatrio-fake.slack.com/archives/C04NATERA/p1789187000000800"
+    },
+    {
+      "channel": "#client-natera-delivery",
+      "user": "grace-fake",
+      "text": "sent over the updated SOW draft for review",
+      "ts": "1789188000.000900",
+      "permalink": "https://liatrio-fake.slack.com/archives/C04NATERA/p1789188000000900"
+    }
+  ]
+}

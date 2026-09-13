@@ -1,0 +1,91 @@
+{
+  "_note": "Expected output of quarantine_lib.redact_for_gateway() for every meeting in fixtures/granola_meetings.json. Non-quarantined meetings pass through unmodified (not listed here -- see fixtures/expected_quarantine.json for which ids those are: gr-1003, gr-1004, gr-1005).",
+  "meetings": [
+    {
+      "meeting_id": "gr-1001",
+      "redacted": {
+        "meeting_id": "gr-1001",
+        "title": "Client sync (natera.com)",
+        "summary": "[redacted: client-domain meeting]",
+        "next_steps": "[redacted: client-domain meeting]",
+        "attendees": 2,
+        "duration_minutes": 30,
+        "start_time": "2026-09-15T09:00:00-05:00",
+        "end_time": "2026-09-15T09:30:00-05:00",
+        "granola_link": "https://notes.granola.ai/d/gr-1001",
+        "quarantined": true
+      },
+      "justification": "Title is unconditionally templated to 'Client sync (<dominant>)' per SKILL.md \u00a73d -- there is no 'keep title if no client hints' branch in SKILL.md; ALL quarantined titles get this treatment regardless of the original wording. attendees=2 is a count, not the participant list."
+    },
+    {
+      "meeting_id": "gr-1002",
+      "redacted": {
+        "meeting_id": "gr-1002",
+        "title": "Client sync (natera.com)",
+        "summary": "[redacted: client-domain meeting]",
+        "next_steps": "[redacted: client-domain meeting]",
+        "attendees": 2,
+        "duration_minutes": 30,
+        "start_time": "2026-09-15T10:00:00-05:00",
+        "end_time": "2026-09-15T10:30:00-05:00",
+        "granola_link": "https://notes.granola.ai/d/gr-1002",
+        "quarantined": true
+      },
+      "justification": "Same as gr-1001; the client-domain host is redacted along with every other participant, surviving only as part of attendees=2."
+    },
+    {
+      "meeting_id": "gr-1006",
+      "redacted": {
+        "meeting_id": "gr-1006",
+        "title": "Client sync (unknown)",
+        "summary": "[redacted: client-domain meeting]",
+        "next_steps": "[redacted: client-domain meeting]",
+        "attendees": 0,
+        "duration_minutes": 15,
+        "start_time": "2026-09-15T15:30:00-05:00",
+        "end_time": "2026-09-15T15:45:00-05:00",
+        "granola_link": "https://notes.granola.ai/d/gr-1006",
+        "quarantined": true
+      },
+      "justification": "Fail-closed quarantine with no known client domain -> dominant='unknown', attendees=0 because known_participants was never present."
+    },
+    {
+      "meeting_id": "gr-1007",
+      "redacted": {
+        "meeting_id": "gr-1007",
+        "title": "Client sync (goengen.com)",
+        "summary": "[redacted: client-domain meeting]",
+        "next_steps": "[redacted: client-domain meeting]",
+        "attendees": 2,
+        "duration_minutes": 20,
+        "start_time": "2026-09-15T16:00:00-05:00",
+        "end_time": "2026-09-15T16:20:00-05:00",
+        "granola_link": "https://notes.granola.ai/d/gr-1007",
+        "quarantined": true
+      },
+      "justification": "Dominant domain 'goengen.com' comes straight from bob@goengen.com's host match -- the folder_hit signal also fired but does not change the dominant-domain selection logic."
+    },
+    {
+      "meeting_id": "gr-1008",
+      "redacted": {
+        "meeting_id": "gr-1008",
+        "title": "Client sync (natera.com)",
+        "summary": "[redacted: client-domain meeting]",
+        "next_steps": "[redacted: client-domain meeting]",
+        "attendees": 3,
+        "duration_minutes": 45,
+        "start_time": "2026-09-15T16:30:00-05:00",
+        "end_time": "2026-09-15T17:15:00-05:00",
+        "granola_link": "https://notes.granola.ai/d/gr-1008",
+        "quarantined": true
+      },
+      "justification": "Dominant is 'natera.com' (first CLIENT_DOMAINS entry with a participant match), NOT the alphabetical tie-break used by client-mapping ('engen') -- these are two different, intentionally-divergent rules; see expected_client_mapping.json. attendees=3 lets the drafter still say 'N client calls totaling Xh' without any names/emails surviving."
+    }
+  ],
+  "aggregate_example": {
+    "quarantined_meeting_ids": ["gr-1001", "gr-1002", "gr-1006", "gr-1007", "gr-1008"],
+    "total_client_calls": 5,
+    "total_minutes": 140,
+    "justification": "Demonstrates the reason duration_minutes survives redaction: the drafter can say '5 client calls totaling 2h20m' from redacted objects alone, with zero meeting bodies or participant emails involved."
+  }
+}
