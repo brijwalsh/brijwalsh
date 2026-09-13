@@ -1,0 +1,36 @@
+{
+  "as_of_ts": 1789354800.0,
+  "as_of_note": "2026-09-13 22:00:00 America/Chicago. Awareness age is the primary v0.2 key.",
+  "top_5": [
+    {
+      "iid": "eyes-msg-project-fresh",
+      "class": "msg",
+      "awareness_days": 6,
+      "why": "Six days on the queue wins even though the Slack message is only about one day old and classifies as msg."
+    },
+    {
+      "iid": "eyes-article-dm-fresh",
+      "class": "article",
+      "awareness_days": 5,
+      "why": "Five days of awareness outranks every item first seen later."
+    },
+    {
+      "iid": "eyes-thread-project-fresh",
+      "class": "thread",
+      "awareness_days": 4,
+      "why": "Four days of awareness puts this thread ahead of the three-day pr and doc rows."
+    },
+    {
+      "iid": "eyes-pr-gateway-fresh",
+      "class": "pr",
+      "awareness_days": 3,
+      "why": "Tied at three awareness days with the client doc; the final v0.1 timestamp tie-break puts this newer Slack message first."
+    },
+    {
+      "iid": "eyes-doc-client-mid",
+      "class": "doc",
+      "awareness_days": 3,
+      "why": "Three awareness days and close-the-loop class keep this row in the top five."
+    }
+  ]
+}

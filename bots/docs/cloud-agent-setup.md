@@ -36,8 +36,12 @@ field, the name in "key," exactly as written below (case-sensitive).
 | `GATEWAY_TASK_TYPE` | eod-drafter, follow-up-radar | Optional | Each skill defaults this itself (`eod-draft`, `commitment-radar`) — only set if overriding |
 | `CLIENT_DOMAINS` | eod-drafter | Optional | Defaults `natera.com,goengen.com` — only set if the client list changes |
 | `CLIENT_TITLE_ALIASES` | eod-drafter | Optional | JSON object `{"domain.com": ["Alias1", "Alias2"]}`. Built-in defaults already cover `goengen.com` (`enGen`, `EnGen`) and `natera.com` (`Natera`, `Panorama`, `Signatera`, `Prospera`). Set only to extend that table. Malformed JSON fails closed (preflight abort). |
+| `SLACK_LIST_ID` | eyes | Required for v0.2 | ID copied from the private `eyes reading queue` Slack List URL |
+| `DEDUP_WINDOW_DAYS` | eyes | Optional | Search and dedup window; defaults to `7` |
 
-`eyes` needs none of these — it does zero gateway calls in v0.1.
+`eyes` still makes zero gateway calls. Its v0.2 state stays in Slack, so the
+only new required secret is the List ID. If that secret is absent during
+rollout, the skill warns Brian and uses v0.1 stateless behavior for that run.
 
 **Where do the gateway values come from today?** The daily-driver
 rotation across Bifrost / Agent Gateway / LiteLLM / Azure APIM changes
@@ -69,6 +73,11 @@ Common fields across all three:
 
 ### `eyes`
 
+- **One-time Slack setup:** Create a private Slack List named
+  `eyes reading queue` with the schema in
+  [`eyes/runbook.md`](../eyes/runbook.md#one-time-setup). Copy the List ID from
+  its URL into the `SLACK_LIST_ID` user-scoped secret. Do not share the List to
+  a channel.
 - **Time:** 07:00 daily (every day, no weekday restriction)
 - **Prompt:**
 
@@ -76,10 +85,11 @@ Common fields across all three:
   Run the `eyes` skill.
   ```
 
-- **First run:** a digest DM lands at your own Slack DM (`U0A0T8FV12B`)
-  within a few seconds — this skill has no gateway dependency, so there's
-  no preflight-fail mode beyond a missing Slack MCP tool. If nothing
-  arrives, see Troubleshooting below.
+- **First run:** a digest parent plus item replies land in your own Slack DM
+  (`U0A0T8FV12B`). The List receives one permalink-keyed row per search hit.
+  Run it again to verify previously digested items do not repeat. This skill
+  has no gateway dependency, but it fails closed when a configured List is
+  unreadable or has the wrong schema.
 
 ### `eod-drafter`
 
@@ -116,16 +126,16 @@ Run these in order, cheapest first, before enabling any schedule. Each
 skill's `runbook.md` has the full manual-invocation and smoke-test
 detail — this is just the shortest path through all three.
 
-1. **`eyes` first.** No LLM, no gateway secrets needed — effectively
-   free. In a Cursor chat with the skill installed:
+1. **`eyes` first.** No LLM or gateway secrets are needed, but v0.2 needs the
+   private List and `SLACK_LIST_ID`. In a Cursor chat with the skill installed:
 
    ```
    Run the eyes skill --dry-run
    ```
 
-   Confirms Slack MCP is wired correctly end to end. If this fails,
-   nothing downstream will work either — fix Slack MCP before touching
-   the other two. Details: [`eyes/runbook.md`](../eyes/runbook.md).
+   Confirms Slack MCP and List reads are wired correctly. If this fails,
+   fix Slack MCP or the List schema before touching the other two. Details:
+   [`eyes/runbook.md`](../eyes/runbook.md).
 
 2. **`eod-drafter` dry-run.** Confirms Slack + Granola + `gh` + gateway
    secrets are all present, without spending real gateway tokens on a
@@ -163,6 +173,8 @@ unattended.
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
 | No DM at all, no error either | Slack MCP disconnected | Reconnect in Cursor settings → MCP → Slack. Re-run `eyes --dry-run` to confirm. |
+| `eyes` warns that v0.2 requires `SLACK_LIST_ID` | The rollout secret is unset | Create the private List using the eyes runbook, copy its ID from the Slack URL, and add the user-scoped secret. The warning run still uses v0.1 stateless behavior. |
+| `eyes` reports an unreadable List or schema mismatch | Wrong List ID, Slack Lists disabled, missing List access, or columns do not match | Compare the private List with the exact schema in `eyes/runbook.md`; do not create a replacement store during a run. |
 | `eod-drafter` preflight-fail DM naming a missing Granola tool | Granola MCP disconnected or never connected | Reconnect in Cursor settings → MCP → Granola. |
 | Preflight-fail DM naming a `GATEWAY_*` var | That secret isn't set, or is set under the wrong scope (team vs. user) | Re-check Cloud Agents → Secrets → User scope against the table above. Get current values from Alex / `#project-ai-gateway`. |
 | DM says "gateway `<name>` is 5xx-ing" | The daily-driver gateway is down or rotated without updating secrets | Expected behavior per [`gateway-routing.md`](./gateway-routing.md) — no retry, no fallback, by design. Confirm the current daily driver in `#project-ai-gateway` and update `GATEWAY_BASE_URL`/`GATEWAY_MODEL` if it changed. |

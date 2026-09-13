@@ -1,0 +1,36 @@
+{
+  "as_of_ts": 1789354800.0,
+  "as_of_note": "2026-09-14T03:00:00Z. The five indexed items have been open for 3-6 days.",
+  "by_permalink": {
+    "https://liatrio.slack.com/archives/C0BML862K61/p1789268400000117": {
+      "first_seen_ts": "2026-09-08T03:00:00Z",
+      "last_seen_ts": "2026-09-13T03:00:00Z",
+      "state": "open",
+      "class": "msg"
+    },
+    "https://liatrio.slack.com/archives/D0ADV5K7280/p1789182000000119": {
+      "first_seen_ts": "2026-09-09T03:00:00Z",
+      "last_seen_ts": "2026-09-13T03:00:00Z",
+      "state": "open",
+      "class": "article"
+    },
+    "https://liatrio.slack.com/archives/C0BT5J2EX32/p1789182000000115": {
+      "first_seen_ts": "2026-09-10T03:00:00Z",
+      "last_seen_ts": "2026-09-13T03:00:00Z",
+      "state": "open",
+      "class": "thread"
+    },
+    "https://liatrio.slack.com/archives/C0BT5J2EX32/p1789182000000105": {
+      "first_seen_ts": "2026-09-11T03:00:00Z",
+      "last_seen_ts": "2026-09-13T03:00:00Z",
+      "state": "open",
+      "class": "pr"
+    },
+    "https://liatrio.slack.com/archives/C0CLIENTNAT/p1789095600000106": {
+      "first_seen_ts": "2026-09-11T03:00:00Z",
+      "last_seen_ts": "2026-09-13T03:00:00Z",
+      "state": "open",
+      "class": "doc"
+    }
+  }
+}

@@ -1,52 +1,80 @@
 # eyes ranking tests
 
-Runs the §3 class rules and the §4 composite sort against a frozen
-search payload. No Slack MCP, no DM composition.
+Runs the class rules and both ranking versions against a frozen Slack search
+payload. The harness uses Python 3 stdlib only. It makes no Slack MCP or LLM
+calls.
 
 ## How to run
 
-From the repo root:
+From the repository root:
 
 ```bash
-python3 bots/eyes/tests/test_ranking.py
+bash bots/eyes/tests/test_ranking.sh
 ```
 
-Python 3 stdlib only. No pip, no pytest.
+The default checks both versions:
 
-Exit 0 if the computed top 5 matches
-`fixtures/expected_ranking.json`. Exit 1 on a mismatch and print both
-lists with class, age, and channel so the break is obvious.
+```bash
+python3 bots/eyes/tests/test_ranking.py --version all
+```
+
+Run one path explicitly:
+
+```bash
+python3 bots/eyes/tests/test_ranking.py --version v0.1
+python3 bots/eyes/tests/test_ranking.py --version v0.2
+```
+
+The v0.2 path accepts another dedup-state fixture:
+
+```bash
+python3 bots/eyes/tests/test_ranking.py \
+  --version v0.2 \
+  --dedup-state path/to/dedup_state.json
+```
+
+Exit 0 means every computed top five matches its expected fixture. Exit 1
+prints expected and actual rows with class, Slack age, channel, and v0.2
+awareness age.
+
+## Fixtures
+
+`fixtures/search_results.json` is the original 20-item
+`slack_search_public_and_private` payload. It covers:
+- `pr` links matching `github.com/*/pull/*`
+- `doc` links from Notion, Confluence, Google Docs, and `liatr.io`
+- one-link external `article` messages
+- `thread` rows with at least three replies
+- plain `msg` rows and a two-URL article decoy
+- project, client, general, DM, and group-DM channels
+
+`fixtures/expected_ranking.json` preserves the v0.1 top five. Its descending
+key is close-the-loop class, Slack age over five days, work-channel signal,
+then newest Slack timestamp.
+
+`fixtures/dedup_state.json` is a permalink-keyed fake List index. Five items
+have been open for three to six days, including fresh Slack messages with
+non-`pr`/`doc` classes.
+
+`fixtures/expected_ranking_v0_2.json` proves awareness age is the primary key.
+The six-day `msg`, five-day `article`, and four-day `thread` all move above
+three-day `pr` and `doc` rows despite their lower v0.1 class priority.
+
+All fixture ages use `as_of_ts=1789354800.0`, which is
+`2026-09-13 22:00:00 America/Chicago`.
 
 ## What it covers
 
-`fixtures/search_results.json` is a 20-item array shaped like a
-`slack_search_public_and_private` hit list:
-
-- `pr` — `github.com/*/pull/*`
-- `doc` — `notion.so`, `confluence`, `docs.google.com`, `liatr.io`
-- `article` — exactly one external URL, no Liatrio/GitHub domain
-- `thread` — `reply_count >= 3` (including a GitHub *issue* URL, which
-  is not a PR)
-- `msg` — plain text, plus a two-URL decoy that must not become
-  `article`
-
-Ages run from 1 day to 7 days, measured against
-`2026-09-13 22:00:00 America/Chicago` (`as_of_ts` in
-`expected_ranking.json`). Channels include `#project-*`, `#client-*`,
-`#liatrio` / `#liatrio-forge`, a 1:1 DM, and a group DM. DMs omit
-`channel.name` and carry `channel.id` plus `Participants`.
-
-Sort key, descending, from SKILL.md §4:
-
-1. `class` in `(pr, doc)`
-2. age > 5 days
-3. channel name starts with `client-` or `project-`
-4. `ts` newest-first
+- Regex classification
+- The unchanged v0.1 ranking path
+- Permalink lookup in fake dedup state
+- v0.2 awareness-age promotion
+- v0.1 tie-breakers after awareness age
 
 ## What it does not cover
 
-- Snippet cleaning (Slack mrkdwn collapse)
-- Channel rendering (`DM w/`, `Group DM w/`)
-- Digest copy, the 5/15 Close-the-loop vs Later split, or the DM
-- Slack MCP itself, including `hasmy::eyes:`
-- Dedup / `clear` (v0.2)
+- Snippet cleaning or DM/group-DM rendering
+- Daily digest eligibility and `is_new`
+- Digest copy or Slack thread replies
+- Slack List pagination, upserts, reaction polling, or idempotency
+- Slack MCP search behavior

@@ -2,12 +2,11 @@
 name: eyes
 description: >-
   Slack reading-queue closer for Brian Walsh. Finds messages Brian has reacted
-  to with :eyes: (👁️) in the last 7 days and DMs him a ranked list with
-  permalinks and snippets. v0.1 has no dedup state, no LLM, no clear-command
-  listener — just the digest. Use when Brian asks "what am I supposed to
-  read?", when he says "run eyes", or on the daily 07:00 CT Cursor Cloud
+  to with :eyes: (👁️), keeps durable dedup state in a private Slack List, and
+  DMs him an age-aware reading queue. Use when Brian asks "what am I supposed
+  to read?", when he says "run eyes", or on the daily 07:00 CT Cursor Cloud
   Agent schedule. Never posts anywhere except Brian's DM.
-version: 0.1.0
+version: 0.2.0
 author: Brian Walsh
 license: Internal
 metadata:
@@ -16,46 +15,111 @@ metadata:
     related_skills: [eod-drafter, follow-up-radar]
 ---
 
-# Eyes — Slack `:eyes:` reading-queue closer (v0.1)
+# Eyes — Slack `:eyes:` reading-queue closer (v0.2)
 
 Brian bookmarks intent by dropping an `:eyes:` (👁️) reaction on Slack messages he
-plans to re-read. That intent then rots. This skill closes the loop by DM'ing him
-a digest of the last 7 days of `:eyes:`-reacted messages.
+plans to re-read. That intent then rots. This skill keeps the queue in Slack,
+stops repeating the same item every morning, and pushes the items Brian has
+ignored longest to the top.
 
-## v0.1 scope contract
+## v0.2 scope contract
 
 **In scope:**
-- `hasmy::eyes:` search over the last 7 days, cap 20 items
-- Rank by age + channel type
-- DM the digest to Brian at `U0A0T8FV12B`
+- `hasmy::eyes:` search over a configurable window, capped at 20 items
+- Durable, permalink-keyed dedup state in a private Slack List
+- Age-of-awareness ranking and daily suppression of previously digested items
+- Item-level clearing from `:x:` or `:done:` reactions in the prior digest
+- DM output only to Brian at `U0A0T8FV12B`
 
-**Out of scope for v0.1** (defer to [`../ROADMAP.md`](../ROADMAP.md)):
-- Dedup state across runs (v0.1 shows the last 7 days every time — Brian
-  mentally handles overlap)
-- `clear <n>` listener (Cursor Cloud Agents have no Slack `message.im`
-  webhook trigger, so this can't be wired reliably)
-- LLM classification of items (regex + channel-name heuristics are enough
-  for a 20-item digest)
-- Removing the reaction on Brian's behalf (never, in any version)
+**Out of scope:**
+- LLM classification. Regex and channel-name heuristics are enough.
+- Removing Brian's reaction. The skill observes reactions but never changes one.
+- Sending Slack content to the gateway, GitHub, Granola, Gmail, or any service
+  outside Slack.
+- Real-time Slack event handling. Clear reactions are polled on the next run.
 
 ## 1. Preflight
 
-Confirm the runtime has these MCP tools before starting; if any is missing,
-DM Brian one line (`eyes: cannot run, missing <tool>`) and exit.
+Set `now` once at run start. Use that same instant for filtering, ranking,
+rendering, and writes. Compute dates and display times in `America/Chicago`.
 
-Required:
+Environment:
+- `SLACK_LIST_ID` is required for v0.2 durable mode.
+- `DEDUP_WINDOW_DAYS` is optional and defaults to `7`. If it is not a positive
+  integer, DM `eyes: invalid DEDUP_WINDOW_DAYS; using 7` and use `7`.
+
+Always-required MCP tools:
 - `Slack.slack_search_public_and_private`
 - `Slack.slack_send_message`
 
-That's it. No canvas, no Granola, no GitHub, no LLM in v0.1.
+Durable-mode MCP tools:
+- `Slack.slack_read_list`
+- `Slack.slack_add_list_record`
+- `Slack.slack_update_list_record`
+- `Slack.slack_get_reactions`
 
-## 2. Find the messages
+If an always-required tool is missing, DM Brian one line
+(`eyes: cannot run, missing <tool>`) and exit.
+
+Missing `SLACK_LIST_ID` is the one rollout exception to durable mode's
+fail-closed rule. DM Brian exactly:
+
+```text
+v0.2 dedup requires SLACK_LIST_ID; falling back to v0.1 stateless behavior for this run
+```
+
+Then run the v0.1 path: search as described in §3, rank by class, Slack age,
+work-channel signal, and newest timestamp, and send the original stateless
+digest. Do not call a List or reaction tool. Do not add `🆕` or `Xd on your
+list`, because no durable timestamp exists.
+
+When `SLACK_LIST_ID` is set, require every durable-mode tool. A missing tool,
+unreadable list, `feature_not_enabled`, or schema mismatch must DM a clear
+`eyes: cannot run, ...` line and exit. Do not silently use stateless mode after
+durable state has been configured.
+
+`--dry-run` may read and compose, but it must not DM or write List state.
+
+## 2. Load dedup state
+
+Call `slack_read_list` with the exact `$SLACK_LIST_ID`, `format: csv`, and
+`limit: 100`. Follow every returned `next_cursor` unchanged until no cursor
+remains. Never resolve the List by its title during a run.
+
+Validate these columns before using any row:
+
+`Permalink`, `Channel Name`, `Channel ID`, `Author`, `Text Excerpt`,
+`Original TS`, `First Seen TS`, `Last Seen TS`, `State`,
+`Snoozed Until TS`, `Class`, `Age At First Seen Days`,
+`Last Digest Message TS`, `Last Digest Rank`, `Digest Channel ID`,
+`Cleared TS`, `Clear Source`, and `Write Token`.
+
+Build an index by `Permalink`. The permalink is the logical primary key; the
+Slack `Record ID` is the physical row ID. Keep the oldest `First Seen TS` row
+as canonical if duplicates exist, suppress the others, and reconcile them
+after the digest.
+
+Build these working sets:
+- `recent_open`: canonical rows with `State=open` and `Last Seen TS >=
+  now - DEDUP_WINDOW_DAYS`
+- `due_snoozed`: rows whose snooze timestamp has passed
+- `last_digest`: rows associated with the latest digest metadata record
+- `recyclable`: rows outside the window that are not part of `last_digest`
+
+The fixed metadata record uses `Permalink=__eyes_metadata__`. Its
+`Last Digest Message TS` stores the parent digest message timestamp,
+`Digest Channel ID` stores the DM channel, and `Last Seen TS` stores the run
+instant. Item replies sent after that parent have a greater Slack timestamp,
+which identifies the rows in that digest. Create this fixed record
+idempotently in the post-DM write phase if it does not exist.
+
+Run the primary clear check in §8 after loading the index and before searching.
+
+## 3. Search Slack
 
 ```yaml
 tool: slack_search_public_and_private
 args:
-  # query mirrors the filter string; slack_search_public_and_private lists
-  # `query` as a required field, so pass it in addition to the split fields.
   query: "hasmy::eyes: after:<YYYY-MM-DD>"
   keywords: []
   filters: "hasmy::eyes: after:<YYYY-MM-DD>"
@@ -67,202 +131,198 @@ args:
   include_context: false
 ```
 
-Notes:
-- `<YYYY-MM-DD>` is computed at runtime as `today - 7 days` in
-  `America/Chicago`. Slack's `after:` operator only accepts an
-  ISO date, never a natural token like `yesterday`.
-- `hasmy::emoji:` is confirmed in the Slack MCP tool contract — it scopes
-  to the caller's own reactions.
-- `limit` max is 20, not 50. Don't ask for more; Slack will 400.
-- `only_my_channels: true` prevents shared/bot-hosted false positives.
-- If the search returns 0 items, DM Brian one line and exit. Slack-only;
-  do not call any other tool. `HH:MM` is current time in
-  `America/Chicago`:
+`<YYYY-MM-DD>` is `today - DEDUP_WINDOW_DAYS` in `America/Chicago`.
+Slack's `after:` operator accepts an ISO date, not `yesterday`.
+`hasmy::emoji:` scopes to the caller's reactions. Keep `limit: 20`; the Slack
+MCP rejects larger values.
 
-  ```
-  :eyes: reading queue clean at HH:MM CT — nothing bookmarked in the last 7 days.
-  ```
+Every digest field already exists on the search hit:
 
-  That heartbeat is how Brian tells a clean queue from a missed run.
-  Keep it one line so he can filter it.
-
-## 3. Enrich each item — no extra API calls
-
-Every field the digest needs is already on the search result:
-
-| Digest field | Source in the search response |
-|--------------|-------------------------------|
-| permalink | `permalink` |
-| channel name | see channel-rendering rules below |
-| author name | `user_name` (fallback: `username` or `user`) |
-| snippet | `text`, cleaned per snippet-cleaning rules below, first 200 chars |
-| age | now − `ts` (humanize to `Xd` / `Xw`) |
-| class | derived, see class rules below |
-
-**Channel rendering.** Slack DMs and Group DMs don't have a `channel.name` —
-only `channel.id` (e.g. `D0ADV5K7280`) plus a `Participants:` array.
-Render as:
-
-| Channel type | Render as |
+| Digest field | Search field |
 |---|---|
-| Public/private channel (`channel.name` present) | `` `#<channel.name>` `` |
-| DM (participants has exactly 2 members incl. Brian) | `DM w/ <other participant's display name>` |
-| Group DM (participants has 3+ members) | `Group DM w/ <other participants, comma-separated>` |
-| Fallback (no name, no participants) | `` `<channel.id>` `` |
+| permalink | `permalink` |
+| channel | `channel.name`, or the participant rules below |
+| author | `user_name`, then `username`, then `user` |
+| snippet | cleaned `text`, capped at 200 characters |
+| Slack timestamp | `ts` |
+| class | derived below |
 
-Never surface the raw DM/Group-DM `channel.id` in the digest — it's
-unreadable and defeats the point of the reading queue.
+**Channel rendering.**
+- Named channel: `` `#<channel.name>` ``
+- Two-person DM: `DM w/ <other participant display name>`
+- Group DM: `Group DM w/ <other participant names>`
+- Last-resort fallback: `` `<channel.id>` ``
 
-**Snippet cleaning.** Apply in this order to `text` before truncating to
-200 chars:
+Never show a raw DM ID when participant data is available.
 
-1. `<https?://…\|label>` → `label` (Slack URL-with-label format)
-2. `<https?://…>` → the URL itself
-3. `<@USERID\|handle>` → `@handle`
-4. `<@USERID>` → `@<USERID>` (rare; happens when Slack didn't resolve
-   the handle, e.g. inactive users)
-5. `<#CHANNEL_ID\|name>` → `#name`
-6. `<!channel>` / `<!here>` / `<!everyone>` → `@channel` / `@here` /
-   `@everyone` (visual only; DM re-render doesn't broadcast)
-7. `<!subteam^S…\|name>` → `@name`
-8. Truncate to 200 chars, append `…` if truncated
+**Snippet cleaning.** Apply these rules in order before truncation:
+1. `<https?://…|label>` becomes `label`
+2. `<https?://…>` becomes the URL
+3. `<@USERID|handle>` becomes `@handle`
+4. `<@USERID>` becomes `@<USERID>`
+5. `<#CHANNEL_ID|name>` becomes `#name`
+6. `<!channel>`, `<!here>`, and `<!everyone>` become their `@` forms
+7. `<!subteam^S…|name>` becomes `@name`
+8. Truncate to 200 characters and append `…` only when truncated
 
-Steps 3–7 keep the digest from rendering as a cascade of clickable
-Slack @-mentions when Brian scrolls it.
+**Class rules, with no LLM:**
+- `pr`: text matches `github\.com/[^/]+/[^/]+/pull/\d+`
+- `doc`: text matches `(notion\.so|confluence|docs\.google\.com|liatr\.io)`
+- `article`: exactly one external URL and no Liatrio or GitHub domain
+- `thread`: `reply_count >= 3`
+- `msg`: everything else
 
-**Class** (regex-only, no LLM):
-- `pr` — text matches `github\.com/[^/]+/[^/]+/pull/\d+`
-- `doc` — text matches any of `notion.so`, `confluence`, `docs.google.com`,
-  `liatr.io` (regex `(notion\.so|confluence|docs\.google\.com|liatr\.io)` —
-  unescaped pipes; `\|` is a literal pipe in POSIX-ish flavors and would
-  never match)
-- `article` — text has exactly one external URL and no Liatrio/GitHub domain
-- `thread` — `reply_count >= 3`
-- `msg` — everything else
+Create `fresh_by_permalink` from the search response.
 
-No `slack_get_reactions` calls, no permalink API calls, no `slack_read_thread`.
-`hasmy::eyes:` already guarantees Brian reacted; we don't need to re-verify.
+## 4. Merge with dedup state
 
-## 4. Rank
+For every fresh search hit:
+- No canonical row: prepare one `open` row with `First Seen TS=now`,
+  `Last Seen TS=now`, `Clear Source=none`, and `is_new=true`.
+- Existing `open` row: keep `First Seen TS`, prepare a narrow metadata and
+  `Last Seen TS=now` update, and set `is_new=false`.
+- Existing `snoozed` row not yet due: update `Last Seen TS` but do not digest.
+- Existing `snoozed` row now due: move it to `open`, keep `First Seen TS`, and
+  make it digest-eligible.
+- Existing `cleared` row: update `Last Seen TS` only. Search never reopens it.
 
-Sort descending by this composite key:
+`First Seen TS` never changes. `Age At First Seen Days` is computed once from
+`Original TS` and retained.
 
-1. `class in (pr, doc)` first — close-the-loop kinds
-2. Age > 5 days — older = more rotten
-3. Channel starts with `client-` or `project-` — work signal
-4. Newest-first ties broken by `ts` desc
+The scheduled digest includes new rows, due snoozed rows, and rows whose prior
+digest-marker write failed. It excludes an `open` row that already has a
+`Last Digest Message TS`. `/eyes --all` includes all recent open rows, capped
+at 20. This eligibility rule is the dedup: updating a row without suppressing
+it would repeat the same queue every day.
 
-## 5. Compose the digest
+After search, run the source-reaction fallback in §8 for recent open rows that
+are absent from `fresh_by_permalink`. Never treat absence alone as proof when
+the search returns its 20-item cap.
 
-DM Brian at `U0A0T8FV12B`. Slack markdown, no blockquotes (they hide
-permalinks in previews):
+## 5. Rank
 
+Sort each eligible set by:
+1. Awareness age, `now - First Seen TS`, longest first
+2. `pr` and `doc` before other classes
+3. Slack age over five days before newer messages
+4. Channels beginning with `client-` or `project-`
+5. Newest `Original TS` as the final tie-breaker
+
+Awareness age is the primary signal. A message Brian first saw six days ago
+beats one first seen today, even when the newer queue item points to an older
+Slack message.
+
+The v0.1 fallback omits step 1 because it has no `First Seen TS`.
+
+## 6. Compose the digest
+
+Send one parent DM to `U0A0T8FV12B`:
+
+```text
+:eyes: *Reading queue — <N> new from the last <window> days* _(as of <YYYY-MM-DD HH:mm CT>)_
+
+<M> previously seen items remain open. Run `/eyes --all` to review them.
+React :x: or :done: on an item reply to clear it next run.
 ```
-:eyes: *Reading queue — <N> from the last 7 days* _(as of <YYYY-MM-DD HH:mm CT>)_
 
+Send each ranked item as a reply in that DM thread. Separate messages are
+intentional: Slack reactions belong to a message, not a line inside one large
+digest. Prefix the first five with `*Close the loop*`; later rows use `*Later*`.
+
+```text
 *Close the loop*
-1. [<class>] <channel> · <author> · <age>
-   "<snippet>"
+1. 🆕 [doc] `#project-ai-gateway` · Example Person — 0d on your list
+   "Cleaned snippet"
    <permalink>
-...
-
-*Later*
-6. ...
-
-_v0.1 — no dedup across runs yet. Same items may reappear if you haven't cleared the reaction._
 ```
 
-Split at 5: top 5 → `*Close the loop*`, rest → `*Later*`. Total cap 20 (search limit).
+Prefix `🆕 ` only when `is_new=true`. The suffix is
+`— Xd on your list`, where `X=floor((now - First Seen TS) / 86400)`.
+Use the eight cleaning steps in §3 for every snippet.
 
-## 6. Guardrails
+Capture the parent timestamp, DM channel ID, and each item reply timestamp.
+The reply timestamp is that row's `Last Digest Message TS`, so a later clear
+check targets one item exactly.
 
-- **Never** post to any channel other than `U0A0T8FV12B`.
-- **Never** add or remove reactions on any message.
-- **Never** call any other MCP surface in v0.1 — if you're calling Granola,
-  Gmail, or GitHub, you're in the wrong skill.
-- On any Slack API error, DM Brian one line with the error code
-  (`eyes: <slack_error>`), never swallow silently.
-- Run duration budget: **under 5 seconds**. If it runs longer, log it and
-  investigate; something is wrong.
+## 7. Write path
 
-## 7. Cost envelope
+Write no durable state until the parent and item DMs succeed. Once sent, run
+one bounded write phase with no more than four record writes in flight:
+- New permalink: use `slack_add_list_record`, unless a recyclable record is
+  available for a full `slack_update_list_record`.
+- Existing permalink: use `slack_update_list_record` with only changed
+  observation fields. Do not include `State` in an ordinary observation update.
+- Displayed row: also write its item reply timestamp, digest rank, and DM
+  channel ID.
+- Metadata row: write the parent timestamp, channel ID, and run instant.
+- Clear operation: update only `State`, `Cleared TS`, and `Clear Source`.
 
-Per run:
-- Slack API: 1 call (the search itself)
-- LLM: 0 tokens (no LLM in v0.1)
-- Total: **effectively free**
+Make every write retry-safe:
+1. Index by permalink and update the canonical `Record ID`.
+2. Before an insert, and before retrying an insert after a timeout, re-read the
+   List and update the row if the permalink now exists.
+3. Give each insert or recycled row the run UUID in `Write Token`.
+4. Re-read touched rows after adds or recycling. Keep the oldest canonical row
+   and mark duplicates `cleared`.
+5. Retry a failed row once. Never resend the digest during the same run.
 
-If v0.1 works and Brian wants dedup/clear/aging, that's v0.2 in
-[`../ROADMAP.md`](../ROADMAP.md).
+Slack Lists have no batch transaction or unique constraint. "Write phase"
+means a bounded group of idempotent row operations, not an atomic batch.
+
+If one or more rows still fail after retry, the digest remains valid. DM:
+
+```text
+eyes: digest sent, but <N> dedup state writes failed; the next run will recover
+```
+
+This is fail-open only after the digest has been sent. A later run can recover
+state drift by permalink without leaking Slack data outside Slack.
+
+## 8. Clear flow
+
+Run the primary check at the start of the next scheduled durable-mode run:
+1. Read the metadata record's latest parent digest timestamp and channel.
+2. Select item rows whose `Last Digest Message TS` is greater than that parent
+   timestamp. Those are the replies in the latest digest thread.
+3. Call `slack_get_reactions` for each item reply.
+4. If Brian (`U0A0T8FV12B`) added `:x:` or `:done:`, partially update that row
+   to `State=cleared`, `Cleared TS=now`, and `Clear Source=cursor_clear`.
+5. Repeating the check against a cleared row is a no-op.
+
+The metadata parent timestamp is the lower bound for the latest item replies.
+Do not interpret a reaction on the parent as an item command, because it cannot
+identify one numbered row.
+
+Fallback after §3: for each recent open row absent from the fresh search, call
+`slack_get_reactions` on its source `Channel ID` and `Original TS`. If Brian's
+`:eyes:` reaction is absent, mark the row `cleared` with
+`Clear Source=eyes_removed`. If the source check fails, leave the row open and
+include one warning in the DM. The skill never removes the reaction itself.
+
+## 9. Heartbeat
+
+If durable merge and clear processing leave zero open items, DM one line:
+
+```text
+:eyes: reading queue clean at HH:MM CT — 0 open items on your list.
+```
+
+If open items remain but none are newly digest-eligible, send the parent digest
+with `0 new` and the open count. That is not a clean queue.
+
+## Guardrails and cost
+
+- Post only to Brian's DM, `U0A0T8FV12B`.
+- Keep source excerpts, channel metadata, digest content, and durable state
+  inside Slack. Nothing in this skill calls the gateway.
+- Never add or remove reactions.
+- Report Slack errors by code. Do not swallow partial failures.
+- LLM usage is zero.
+- A normal run uses one search, one to three List reads, reaction checks, one
+  parent DM plus item replies, and up to 20 row writes. Do not preserve v0.1's
+  five-second budget; List and reaction calls can take longer.
 
 ## Runbook
 
-See [`runbook.md`](./runbook.md) for the Cursor Cloud Agent schedule config
-and manual invocation.
-
-## v0.2 additions (design preview)
-
-Full design: [`v0.2-dedup-design.md`](./v0.2-dedup-design.md).
-
-These rules add to v0.1. They do not take effect until the v0.2 deploy creates
-the private Slack List and records its ID in this skill.
-
-### Read state
-
-- Read every page of the fixed Slack List before searching.
-- Index rows by permalink. The permalink is the logical primary key.
-- Load recent `open` rows, due `snoozed` rows, the latest digest rank map, and
-  expired rows that can be reused.
-- Fail closed if the list is missing, unreadable, or has the wrong schema.
-  Never fall back to the repeating v0.1 path.
-- If a permalink has duplicate rows, keep the oldest as canonical, suppress the
-  others from the digest, and reconcile them in the write phase.
-
-### Merge
-
-- Search with the existing 7-day `hasmy::eyes:` query.
-- New permalink: prepare an `open` row with `first_seen_ts=now`.
-- Existing permalink: retain `first_seen_ts` and update `last_seen_ts`.
-- Never reopen a `cleared` row from search alone.
-- Daily output includes new and due-snoozed items. Previously digested open
-  rows stay out unless Brian runs `/eyes --all`.
-- Only infer reaction removal when the search returns fewer than its 20-item
-  cap. At the cap, absence is ambiguous.
-
-### Rank and compose
-
-Rank by awareness age first: `now - first_seen_ts`, descending. Then apply the
-v0.1 class, Slack age, channel, and timestamp tie-breakers.
-
-Render queue age as `Xd on your list`:
-
-```text
-1. [doc] `#project-ai-gateway` · Example Person · 4d on your list
-```
-
-### Write state
-
-- DM the digest before changing state.
-- After a successful DM, upsert every fresh result in one bounded write phase.
-- Store the digest message timestamp and rank only on rows shown in the digest.
-- Scheduled updates must not write `state` for an existing row. This keeps a
-  concurrent manual clear from being overwritten.
-- Slack Lists have no batch upsert or uniqueness constraint. Retry by row,
-  check the permalink before retrying an insert, and reconcile duplicates.
-
-### Clear
-
-Primary:
-
-```text
-/eyes clear 3
-```
-
-Resolve rank 3 against the latest stored digest and partially update that row
-to `cleared`. This works even when the original `:eyes:` reaction remains.
-
-Fallback: when an exhaustive fresh search no longer returns an open permalink,
-mark it `cleared` with source `eyes_removed`.
-
-Do not use `:x:` or `:done:` on a single digest message as a rank command. A
-reaction identifies the message, not one numbered line inside it.
+See [`runbook.md`](./runbook.md) for Slack List creation, secrets, schedule
+configuration, and manual invocation.
