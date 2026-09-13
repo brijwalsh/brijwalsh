@@ -3,11 +3,32 @@
 Everything in v0.1 SKILL.md files that says "deferred" links here.
 Nothing on this list ships until the corresponding gate is passed.
 
+## Shipped v0.2
+
+### `eyes` durable dedup and age-aware ranking
+
+`eyes` now stores its permalink-keyed queue in a private Slack List. Daily
+digests suppress previously shown open rows, `/eyes --all` ranks by awareness
+age, and item-reply reactions or source `:eyes:` removal clear rows on the next
+run. Missing `SLACK_LIST_ID` keeps the v0.1 stateless path available during
+rollout.
+
+The implementation and operator setup are in
+[`eyes/SKILL.md`](./eyes/SKILL.md) and
+[`eyes/runbook.md`](./eyes/runbook.md). The original decision record remains in
+[`eyes/v0.2-dedup-design.md`](./eyes/v0.2-dedup-design.md).
+
+**v0.3 pointer:** add an explicit `/eyes reopen <permalink>` command. Real-time
+Slack event handling remains gated by candidate §3 below.
+
 ## v0.2 candidate features
 
-### 1. Durable state (unlocks dedup + aging for all three skills)
+### 1. Durable state for the remaining skills
 
 **Gate:** a state store that survives Cloud Agent VM tear-down.
+
+`eyes` passed this gate with a private Slack List. The store choice for
+`eod-drafter` and `follow-up-radar` remains open.
 
 Options, ranked:
 
@@ -21,8 +42,6 @@ Options, ranked:
    Overkill for v0.2; only if the gist approach hits size caps.
 
 Once state exists:
-- [`eyes` v0.2 durable dedup design](./eyes/v0.2-dedup-design.md) defines the
-  Slack List schema, age-aware ranking, daily suppression, and clear flow
 - `eod-drafter` gets friction.jsonl + Friday summary
 - `follow-up-radar` gets aging + `clear`
 
