@@ -342,6 +342,10 @@ that's a v0.2 discussion, not a runtime override.
 
 ## 6. Call the gateway
 
+If §4 dropped every cluster (zero GitHub, Slack, or Granola signals in
+the window), skip this section and §7. Go to §8 clean-run. An empty
+day is not a reason to call the gateway.
+
 ```
 POST $GATEWAY_BASE_URL/chat/completions
 Headers: Authorization: Bearer $GATEWAY_API_KEY  (from Cloud Agent secret)
@@ -383,10 +387,24 @@ exit (no retry, no fallback).
 
 ## 8. DM the draft
 
-If invoked with `--dry-run`, skip this section entirely — log the draft
-to stdout (or the Cursor Cloud Agent transcript) instead. `--dry-run`
-must never call `slack_send_message`. All other guardrails still apply
-(client quarantine, gateway required, no direct-provider fallback).
+If invoked with `--dry-run`, skip sending. Log the draft (or the
+clean-run line below) to stdout or the Cursor Cloud Agent transcript.
+`--dry-run` must never call `slack_send_message`. All other guardrails
+still apply (client quarantine, gateway required, no direct-provider
+fallback).
+
+**Clean run.** If every cluster was empty after §4, there is no draft
+and §6 was skipped. DM Brian one line and exit. Slack-only. Do not
+call the gateway to confirm an empty day. `HH:MM` is current time in
+`America/Chicago`:
+
+```
+:draft-ai-gateway: no EOD-worthy activity today, HH:MM CT. Skipping the draft.
+```
+
+Preflight failures (missing secret, MCP unavailable, gateway 5xx) still
+use the existing "DM Brian and exit" path. This heartbeat is only for
+a run that completed and found nothing.
 
 Otherwise:
 

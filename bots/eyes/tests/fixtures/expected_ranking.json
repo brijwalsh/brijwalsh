@@ -1,0 +1,31 @@
+{
+  "as_of_ts": 1789354800.0,
+  "as_of_note": "2026-09-13 22:00:00 America/Chicago. Ages in search_results.json are relative to this instant.",
+  "top_5": [
+    {
+      "iid": "eyes-pr-gateway-stale",
+      "class": "pr",
+      "why": "Close-the-loop (pr) + age > 5d + project-* channel. Newest ts among that triple, so it leads."
+    },
+    {
+      "iid": "eyes-pr-client-stale",
+      "class": "pr",
+      "why": "Same triple (pr, age > 5d, client-*). Older than the gateway PR, newer than the marketing Notion doc."
+    },
+    {
+      "iid": "eyes-doc-mkt-stale",
+      "class": "doc",
+      "why": "Close-the-loop (doc) + age > 5d + project-*. Oldest of the three items that share that triple."
+    },
+    {
+      "iid": "eyes-doc-liatrio-stale",
+      "class": "doc",
+      "why": "Close-the-loop (doc) + age > 5d, but #liatrio is not client-/project-, so it sits below the work-channel stale items."
+    },
+    {
+      "iid": "eyes-pr-gateway-fresh",
+      "class": "pr",
+      "why": "Close-the-loop (pr) + project-* but only 2d old, so the age > 5d flag is off. Still beats every non-pr/doc item, and beats the 3d client confluence doc on ts."
+    }
+  ]
+}
