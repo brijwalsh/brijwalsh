@@ -72,6 +72,11 @@ pick it up.
 up on every Cloud Agent VM. Details in
 [`docs/install-notes.md`](./docs/install-notes.md).
 
+**Turning the schedules on:** once the skills are installed (staging or
+promoted), configure the Cursor Cloud Agents dashboard — secrets,
+schedules, first-run smoke tests — per
+[`docs/cloud-agent-setup.md`](./docs/cloud-agent-setup.md).
+
 ## Sequenced roll-out
 
 1. **This weekend** — ship [`eyes/`](./eyes/SKILL.md) v0.1. Weekend build,
