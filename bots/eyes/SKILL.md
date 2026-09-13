@@ -111,7 +111,7 @@ The fixed metadata record uses `Permalink=__eyes_metadata__`. Its
 `Digest Channel ID` stores the DM channel, and `Last Seen TS` stores the run
 instant. Item replies sent after that parent have a greater Slack timestamp,
 which identifies the rows in that digest. Create this fixed record
-idempotently if it does not exist.
+idempotently in the post-DM write phase if it does not exist.
 
 Run the primary clear check in §8 after loading the index and before searching.
 
