@@ -14,11 +14,13 @@
 
 - **Required MCP:** Slack, Granola.
 - **Required CLI:** `gh` authenticated as `@BriWalsh`.
-- **Required env vars** (set as Cloud Agent secrets):
+- **Required env vars** (set as Cloud Agent secrets — every entry is
+  required; the skill preflight aborts if any is missing):
   - `GATEWAY_BASE_URL` — e.g. `https://litellm.internal.liatrio/gateway/v1`
-  - `GATEWAY_API_KEY`
+  - `GATEWAY_API_KEY` — bearer token for the daily-driver gateway
   - `GATEWAY_MODEL` — e.g. `claude-sonnet-5`
-  - `CLIENT_DOMAINS` — default `natera.com,goengen.com`
+  - `GATEWAY_TASK_TYPE` — optional, defaults `eod-draft`
+  - `CLIENT_DOMAINS` — optional, default `natera.com,goengen.com`
 - **Model in the Cursor agent card:** any (the skill calls the gateway
   itself; the outer agent model just parses SKILL.md and orchestrates).
 

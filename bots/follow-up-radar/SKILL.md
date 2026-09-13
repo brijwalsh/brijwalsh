@@ -61,8 +61,10 @@ Required:
 - `Slack.slack_search_public_and_private`, `Slack.slack_read_thread`,
   `Slack.slack_send_message`
 - `$GATEWAY_BASE_URL`, `$GATEWAY_API_KEY`, `$GATEWAY_MODEL`
+- `$GATEWAY_TASK_TYPE` — optional, defaults `commitment-radar`
 
-If any missing, DM Brian and exit.
+If any of the required entries is missing, DM Brian and exit. Do **not**
+fall through to a direct-provider API call.
 
 ## 2. Watched channel list (hardcoded IDs)
 
@@ -92,13 +94,29 @@ guardrail in `§3` regardless of what this file says. Defense in depth.
 
 ## 3. Pull raw signals — internal channels only
 
-For each watched channel ID, one search:
+The ranking in §6 uses `age_days >= 5` and `>= 3` gates, so the search
+window has to cover at least that. v0.1 pulls the **last 7 days** per
+channel; that's the smallest window where the aging buckets can ever be
+populated. `<AFTER_DATE>` is computed at runtime as
+`today - 7 days` in `America/Chicago` and formatted as `YYYY-MM-DD` —
+Slack's `after:` operator only accepts an ISO date, never `yesterday`.
+
+Also, before running the search, apply the excluded-prefixes filter from
+§2: if a channel's name starts with any string in `excluded_prefixes`,
+skip it entirely — don't just rely on the post-search guardrail. This
+wires §2's exclusion list into the actual search loop instead of leaving
+it as decoration.
+
+For each watched channel ID that survives the exclusion filter, one
+search:
 
 ```yaml
 tool: slack_search_public_and_private
 args:
+  # slack_search_public_and_private lists `query` as a required field.
+  query: "in:<#CHANNEL_ID> after:<AFTER_DATE>"
   keywords: []
-  filters: "in:<#CHANNEL_ID> after:<yesterday>"
+  filters: "in:<#CHANNEL_ID> after:<AFTER_DATE>"
   natural_language_query: ""
   limit: 20
   sort: timestamp
@@ -108,10 +126,10 @@ args:
   max_context_length: 400
 ```
 
-**Hard guardrail** (executed before the LLM call): for every message in
-the result set, if `channel.name` starts with `client-`, drop it and
-increment a counter. If the counter is non-zero at the end of the run, DM
-Brian a one-liner:
+**Hard guardrail** (executed before the LLM call, defense in depth on top
+of the §2 filter): for every message in the result set, if
+`channel.name` starts with `client-`, drop it and increment a counter.
+If the counter is non-zero at the end of the run, DM Brian a one-liner:
 
 ```
 :warning: radar: <N> messages from client channels were included in
@@ -124,25 +142,42 @@ Then filter to messages that either:
 - mention Brian (`<@U0A0T8FV12B>` appears in the message or a nearby
   thread reply).
 
+For every surviving message, compute `age_days` **in the skill**, not
+the LLM: `age_days = floor((now_ct - message_ts_ct) / 86400)`. The
+classifier never sees `age_days`, and never gets asked to reason about
+dates.
+
 ## 4. Regex prefilter (before any LLM call)
 
 Only messages matching one of these patterns proceed to classification:
 
 | Pattern | Rough meaning |
 |---------|--------------|
-| `\b(I'?ll|I will|let me)\b` | Brian promises action |
-| `\bwe'?ll\b`, `\bwe are going to\b` | Group commitment |
-| `\b(by|before)\s+(EOD|EOW|Fri|Mon|tomorrow|today|Monday|Friday|<date>)\b` | Deadline |
-| `\bcircl(e|ing) back\b`, `\bfollow(-|\s)?up\b` | Loop-closing intent |
-| `\bwaiting (on|for)\b`, `\bblocked (on|by)\b` | Brian is owed |
-| `\bdecid(e|ing|ed)\b` in a `promise` context | Decision commitment |
+| `\b(I'll|I will|let me)\b` | Brian promises action |
+| `\b(we'll|we will|we are going to|we're going to)\b` | Group commitment (`we'll` — with an apostrophe — not `\bwe'?ll\b`, which would also fire on "well") |
+| `\b(by\|before)\s+(EOD\|EOW\|Fri\|Mon\|tomorrow\|today\|Monday\|Friday\|\d{4}-\d{2}-\d{2})\b` | Deadline |
+| `\bcircl(e\|ing) back\b`, `\bfollow(-\|\s)?up\b` | Loop-closing intent |
+| `\bwaiting (on\|for)\b`, `\bblocked (on\|by)\b` | Brian is owed |
+| `\bdecid(e\|ing\|ed)\b` in a promise context | Decision commitment |
+
+The pipes above are shown escaped (`\|`) only because they sit inside a
+Markdown table cell; **at runtime the skill uses unescaped `|` as the
+regex alternation operator**. If the skill ever runs these patterns
+verbatim as written in the table, alternation breaks silently.
 
 If no candidates, DM Brian a one-liner and exit.
 
 ## 5. Classify each candidate
 
-Send each candidate individually to the gateway with the classifier prompt
-in [`PROMPT.md`](./PROMPT.md). Output schema:
+Batch candidates in groups of up to **5 per gateway call** using the
+classifier prompt in [`PROMPT.md`](./PROMPT.md); a 20-item working set is
+then at most 4 gateway calls. The classifier prompt uses strict data
+fencing so the input Slack text is never treated as instructions (see
+[`PROMPT.md`](./PROMPT.md) for the exact system prompt).
+
+The classifier returns **one JSON object per candidate** with this
+schema — `age_days` is intentionally **not** in the schema, the skill
+computes it in §3:
 
 ```json
 {
@@ -158,12 +193,13 @@ in [`PROMPT.md`](./PROMPT.md). Output schema:
     "external_promised_to_brian",
   "owner": "brian" | "<name>" | "unknown",
   "deadline": "2026-09-16" | "today" | "this_week" | "no_deadline",
-  "confidence": 0.0 - 1.0,
-  "age_days": <int>
+  "confidence": 0.0 - 1.0
 }
 ```
 
-Drop `confidence < 0.7`. Cap the working set at 20 candidates per run.
+After the call, the skill splices the pre-computed `age_days` back onto
+each item by matching on `source_id`. Drop items with `confidence < 0.7`.
+Cap the working set at 20 candidates per run.
 
 ## 6. Rank
 
@@ -178,9 +214,15 @@ Cap the digest at 10 items.
 
 ## 7. Draft follow-up language
 
-For each `owner == brian` item, one small gateway call for a Brian-voice
-one-liner (see [`PROMPT.md`](./PROMPT.md::draft)). For
-`external_promised_to_brian`, generate a nudge draft.
+For each `owner == brian` item, one small gateway call for a
+Brian-voice one-liner using the `draft_apology` variant in
+[`PROMPT.md`](./PROMPT.md). For `external_promised_to_brian`, use the
+`draft_nudge` variant — it's a *different* prompt, tuned for polite
+pressure rather than apology; do not reuse the apology prompt.
+
+If the run was invoked with `--dry-run`, skip §7 and §8 entirely — the
+skill exits after logging the digest it would have sent. `--dry-run`
+must never call `slack_send_message`.
 
 ## 8. Compose the digest
 

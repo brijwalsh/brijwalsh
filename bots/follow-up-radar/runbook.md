@@ -50,10 +50,16 @@ To add a new *internal* channel to the watch list:
 
 ## Monthly privacy audit (5 min)
 
-- [ ] `grep -R "client-" ~/.cache/follow-up-radar/` returns nothing
-- [ ] Digest DMs from the last 30 days have no client identifiers
+v0.1 is stateless — the skill has no `~/.cache/follow-up-radar/` and no
+durable log. The audit is therefore an output-side and config-side
+review, not a filesystem grep:
+
+- [ ] Digest DMs from the last 30 days (search `from:@brian-agent
+      radar:`) contain no client identifiers — no `natera`, no `engen`,
+      no `#client-*` channel names in the ranked items
 - [ ] No gateway logs (if available) reference Natera / enGen content
-- [ ] Watched channels list still contains only internal channels
+- [ ] Watched channels list in `SKILL.md §2` still contains only
+      internal channels; `excluded_prefixes` still includes `#client-`
 
 ## v0.2 gate — client channels + Gmail
 

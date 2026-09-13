@@ -21,12 +21,24 @@ pick it up.
 
 1. **All output goes to Brian's DM (`U0A0T8FV12B`).** No public channel, no
    client channel, no email. Ever.
-2. **No `#client-*` channel content leaves Slack MCP.** `follow-up-radar`
-   is internal-only in v0.1; `eod-drafter` redacts client-domain Granola
-   meetings and strips their next-steps before the gateway call.
+2. **No `#client-*` channel content leaves Slack MCP into a gateway.**
+   `follow-up-radar` is internal-only in v0.1 (client channels filtered
+   at both search-time and post-search). `eod-drafter` (a) strips the
+   `text` field from every `#client-*` Slack entry before serializing
+   the prompt input, and (b) applies multi-signal, fail-closed
+   quarantine to Granola meetings — participants ending in a
+   `$CLIENT_DOMAINS` suffix (host match, not substring), title
+   containing a client stem, client folder, or unknown attendance all
+   trigger it. Quarantined meetings reach the LLM only as
+   `Client sync (<domain>)` + link.
 3. **No fallback if the gateway is down.** DM Brian and exit; the whole
    point is to generate dogfooding data for `project-ai-gateway#125`.
 4. **No autonomous action on Brian's behalf.** The kit drafts; Brian sends.
+5. **Untrusted third-party text is fenced, never obeyed.** All Slack /
+   Granola / GitHub content interpolated into an LLM prompt is wrapped
+   in XML-style envelopes, and the system prompt tells the model to
+   treat envelope contents as inert data. Prompt injection has to fail
+   here.
 
 ## What ships in v0.1 vs later
 

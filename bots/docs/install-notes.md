@@ -24,22 +24,34 @@ cp -r ../brwalsh/bots/eyes .
 cp -r ../brwalsh/bots/eod-drafter .
 cp -r ../brwalsh/bots/follow-up-radar .
 
-# Docs live alongside the skills so they don't 404 after the move
 mkdir -p _delivery-principal-ops-kit
 cp -r ../brwalsh/bots/docs _delivery-principal-ops-kit/docs
 cp    ../brwalsh/bots/README.md _delivery-principal-ops-kit/README.md
 cp    ../brwalsh/bots/ROADMAP.md _delivery-principal-ops-kit/ROADMAP.md
+
+# The skills reference ../ROADMAP.md from their SKILL.md and runbook.md
+# files. Under bots/ the parent path resolves to bots/ROADMAP.md; after
+# the move each skill sits at the repo root, so the parent path resolves
+# to the repo root — which has no ROADMAP.md. Rewrite the links in-place
+# so they point at the new home. Do this before committing.
+for skill in eyes eod-drafter follow-up-radar; do
+  find "$skill" -type f -name '*.md' -exec \
+    sed -i.bak -E \
+      -e 's|\.\./ROADMAP\.md|../_delivery-principal-ops-kit/ROADMAP.md|g' \
+      -e 's|\.\./README\.md|../_delivery-principal-ops-kit/README.md|g' \
+      -e 's|\.\./docs/|../_delivery-principal-ops-kit/docs/|g' \
+      {} +
+  find "$skill" -name '*.bak' -delete
+done
 
 git add eyes eod-drafter follow-up-radar _delivery-principal-ops-kit
 git commit -m "Add Delivery Principal Ops Kit v0.1"
 git push -u origin add-delivery-principal-ops-kit
 ```
 
-Note: after the move, the skills reference their docs via a relative
-`../_delivery-principal-ops-kit/docs/...` path, or you can just leave the
-`bots/docs/` links pointing at `brwalsh` (still resolves for a human
-reader). Skills themselves don't `require` the docs at runtime; they're
-for humans.
+The `sed` block is the only load-bearing part. Skills themselves don't
+`require` the docs at runtime — they're for humans — but the docs must
+resolve when a human reader clicks them from a skill's SKILL.md.
 
 Then, in a follow-up PR to `brwalsh`, delete the skill folders (leaving
 `bots/README.md`, `bots/ROADMAP.md`, and `bots/docs/` as the kit's
@@ -54,12 +66,21 @@ promote to `cursor-user-skills` only when stable), extend
 ```bash
 # After the existing rsync of $SRC (cursor-user-skills):
 BOTS_SRC="$(mktemp -d)"
-trap 'rm -rf "$SRC" "$BOTS_SRC"' EXIT
+# Extend the pre-existing EXIT trap that owned $SRC — do not clobber it
+_prev_trap="$(trap -p EXIT | sed "s/^trap -- '//; s/' EXIT$//")"
+trap "rm -rf \"\$BOTS_SRC\"; $_prev_trap" EXIT
 
 if [ -n "${GH_TOKEN:-}" ] && git clone --depth 1 --quiet \
-    "https://x-access-token:${GH_TOKEN}@github.com/BriWalsh/brwalsh.git" "$BOTS_SRC" 2>/dev/null; then
-  :
-elif ! git clone --depth 1 --quiet "https://github.com/BriWalsh/brwalsh.git" "$BOTS_SRC" 2>/dev/null; then
+    "https://x-access-token:${GH_TOKEN}@github.com/BriWalsh/brwalsh.git" \
+    "$BOTS_SRC" 2>/dev/null; then
+  # Strip the token from .git/config before anything (rsync, cat, cp)
+  # touches the checkout. Otherwise the bearer credential persists in
+  # the temp clone and, worse, can be rsynced into destinations that
+  # don't --exclude '.git' correctly.
+  git -C "$BOTS_SRC" remote set-url origin \
+    "https://github.com/BriWalsh/brwalsh.git"
+elif ! git clone --depth 1 --quiet \
+       "https://github.com/BriWalsh/brwalsh.git" "$BOTS_SRC" 2>/dev/null; then
   echo "WARN: could not clone brwalsh for ops-kit skills; skipping." >&2
   BOTS_SRC=""
 fi
@@ -68,6 +89,9 @@ if [ -n "$BOTS_SRC" ]; then
   for skill in eyes eod-drafter follow-up-radar; do
     if [ -d "$BOTS_SRC/bots/$skill" ]; then
       for dest in "${DESTS[@]}"; do
+        # --exclude '.git' is belt-and-suspenders now that the token is
+        # already stripped, but keep it in case a future edit removes
+        # the remote-set-url line above.
         rsync -a --exclude '.git' "$BOTS_SRC/bots/$skill/" "$dest/$skill/"
       done
     fi
@@ -87,6 +111,7 @@ Set under **Cloud Agents > Secrets** (user scope):
 | `GATEWAY_BASE_URL` | eod-drafter, follow-up-radar | OpenAI-compatible endpoint |
 | `GATEWAY_API_KEY` | eod-drafter, follow-up-radar | Bearer token |
 | `GATEWAY_MODEL` | eod-drafter, follow-up-radar | Model name to request |
+| `GATEWAY_TASK_TYPE` | eod-drafter, follow-up-radar | Optional; each skill has its own default |
 | `CLIENT_DOMAINS` | eod-drafter | Optional; defaults `natera.com,goengen.com` |
 
 Slack MCP token, Granola MCP token, and Gmail MCP token are managed by

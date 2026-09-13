@@ -57,23 +57,30 @@ Non-Forge   (optional, same rule)
 | `:heart_hands:` | Endorsement |
 | `:approved_stamp:` | Approval |
 
-## Example — real EOD from 2026-08-10
+## Example — real EOD from 2026-08-10 (emoji-annotated for calibration)
+
+The real post used the emoji vocabulary from the table above; this
+calibration example keeps those markers in place so the LLM sees where
+they live. If the drafter emits an EOD with *zero* emoji, that's a
+calibration failure — Brian's posts always use at least two.
 
 ```
 Today
-• Posted Goals for the Week: CI/CD gates for app + infra repos, Slackbot for CSV ingestion, AI-Native repos, more data visualized in the live environment
-• Reviewed and merged Ben's repo-managed Cloud Agent environment PR #45, then merged the AI-native agent harness (#39 + #45) into my prototype branch via #52 — Bugbot caught the DB-backup hook failing closed without jq; fixed
-• Ran a multi-model review of the infra OpenTofu/ECS Fargate PR (marketing-dashboard-infra #1) and opened draft PR #54 with the review doc; started reviewing Anmol's local=CI task check gate PR #53
-• Tightened up the infra repo: Ben made marketing-dashboard-infra Internal and added Anmol, Brad, and me as admins
-• Confirmed the smallest demo-able metric slice with Masele — LinkedIn organic + Google Analytics from the All Marketing Data canvas is the right cut
-• Dug into Cursor cloud agents with Liatrio Brain — how the Forge team actually runs background agents and what we can reuse here (per Kevin's suggestion)
-• Marked the engineering handoff point: automation built + data flowing in a format Metabase can consume
+:bullseye: Posted Goals for the Week: CI/CD gates for app + infra repos, Slackbot for CSV ingestion, AI-Native repos, more data visualized in the live environment
+:pullreq: Reviewed and merged Ben's repo-managed Cloud Agent environment <https://github.com/liatrio-labs/marketing-dashboard/pull/45|#45>, then merged the AI-native agent harness (<https://github.com/liatrio-labs/marketing-dashboard/pull/39|#39> + <https://github.com/liatrio-labs/marketing-dashboard/pull/45|#45>) into my prototype branch via <https://github.com/liatrio-labs/marketing-dashboard/pull/52|#52> — :bulb: Bugbot caught the DB-backup hook failing closed without jq; fixed
+:test_tube: Ran a multi-model review of the infra OpenTofu/ECS Fargate PR (marketing-dashboard-infra <https://github.com/liatrio-labs/marketing-dashboard-infra/pull/1|#1>) and opened draft <https://github.com/liatrio-labs/marketing-dashboard-infra/pull/54|#54> with the review doc; started reviewing Anmol's local=CI task check gate <https://github.com/liatrio-labs/marketing-dashboard/pull/53|#53>
+:building_construction: Tightened up the infra repo: Ben made marketing-dashboard-infra Internal and added Anmol, Brad, and me as admins
+:handshake: Confirmed the smallest demo-able metric slice with Masele — LinkedIn organic + Google Analytics from the All Marketing Data canvas is the right cut
+:dog-food: Dug into Cursor cloud agents with Liatrio Brain — how the Forge team actually runs background agents and what we can reuse here (per Kevin's suggestion)
+:next_button: Marked the engineering handoff point: automation built + data flowing in a format Metabase can consume
 
 Tomorrow
-• Finish review and land Anmol's CI quality-gate PR #53; keep the linting CI/CD workflow moving
-• Push the infra PR #1 multi-model review findings to resolution with Anmol
-• Teach / share how to build views in Metabase — shape of the data
-• Start building against the confirmed LinkedIn organic + GA slice
+:pullreq: Finish review and land Anmol's CI quality-gate <https://github.com/liatrio-labs/marketing-dashboard/pull/53|#53>; keep the linting CI/CD workflow moving
+:test_tube: Push the infra <https://github.com/liatrio-labs/marketing-dashboard-infra/pull/1|#1> multi-model review findings to resolution with Anmol
+:dashboard: Teach / share how to build views in Metabase — shape of the data
+:bullseye: Start building against the confirmed LinkedIn organic + GA slice
+
+*Sent using* <@U093DJ468EN|Cursor>
 ```
 
 ## Anti-patterns (avoid these)

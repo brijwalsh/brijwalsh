@@ -4,9 +4,11 @@
 
 - **Repo:** `BriWalsh/cursor-user-skills` (after moving) or `BriWalsh/brwalsh`
   (during staging)
-- **Schedule:** Daily at **12:00 America/Chicago** (13:00 UTC in CDT,
-  14:00 UTC in CST — Cursor Cloud Agents accept named tz, use `America/Chicago`
-  and let it handle DST).
+- **Schedule:** Daily at **07:00 America/Chicago** (12:00 UTC in CDT,
+  13:00 UTC in CST). Cursor Cloud Agents accept named tz, so configure the
+  cron as `America/Chicago` and let it handle DST; do not hard-code a UTC
+  offset. The README, SKILL.md, and this runbook all agree on 07:00 CT — if
+  you change one, change all three.
 - **Prompt:**
 
   ```

@@ -54,8 +54,11 @@ That's it. No canvas, no Granola, no GitHub, no LLM in v0.1.
 ```yaml
 tool: slack_search_public_and_private
 args:
+  # query mirrors the filter string; slack_search_public_and_private lists
+  # `query` as a required field, so pass it in addition to the split fields.
+  query: "hasmy::eyes: after:<YYYY-MM-DD>"
   keywords: []
-  filters: "hasmy::eyes: after:<YYYY-MM-DD>"   # 7 days ago in Brian's tz (America/Chicago)
+  filters: "hasmy::eyes: after:<YYYY-MM-DD>"
   natural_language_query: ""
   limit: 20
   sort: timestamp
@@ -65,8 +68,11 @@ args:
 ```
 
 Notes:
-- `hasmy::emoji:` is confirmed in the Slack MCP tool contract — it scopes to
-  the caller's own reactions.
+- `<YYYY-MM-DD>` is computed at runtime as `today - 7 days` in
+  `America/Chicago`. Slack's `after:` operator only accepts an
+  ISO date, never a natural token like `yesterday`.
+- `hasmy::emoji:` is confirmed in the Slack MCP tool contract — it scopes
+  to the caller's own reactions.
 - `limit` max is 20, not 50. Don't ask for more; Slack will 400.
 - `only_my_channels: true` prevents shared/bot-hosted false positives.
 - If the search returns 0 items, DM Brian one line
@@ -87,7 +93,10 @@ Every field the digest needs is already on the search result:
 
 **Class** (regex-only, no LLM):
 - `pr` — text matches `github\.com/[^/]+/[^/]+/pull/\d+`
-- `doc` — text matches `notion.so\|confluence\|docs\.google\.com\|liatr\.io`
+- `doc` — text matches any of `notion.so`, `confluence`, `docs.google.com`,
+  `liatr.io` (regex `(notion\.so|confluence|docs\.google\.com|liatr\.io)` —
+  unescaped pipes; `\|` is a literal pipe in POSIX-ish flavors and would
+  never match)
 - `article` — text has exactly one external URL and no Liatrio/GitHub domain
 - `thread` — `reply_count >= 3`
 - `msg` — everything else

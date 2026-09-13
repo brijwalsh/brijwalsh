@@ -6,6 +6,11 @@ Bifrost / Agent Gateway / LiteLLM / Azure APIM is done manually today
 (Brian edits the secrets) and automated in v0.2
 (see [`../ROADMAP.md`](../ROADMAP.md)).
 
+**Scope.** This doc applies to `eod-drafter` and `follow-up-radar`, the
+two skills that actually call an LLM in v0.1. `eyes` does zero gateway
+calls in v0.1 — it's regex + Slack search only — and can ignore every
+env var and rule below.
+
 ## Env vars every skill respects
 
 ```
@@ -46,20 +51,37 @@ Some gateways ignore this; some (LiteLLM auto-routers) use it for
 routing. Setting it uniformly means the routers get consistent signal
 across the kit.
 
-## Client-domain quarantine (all skills)
+## Client-domain quarantine (gateway-calling skills)
 
-Before any gateway call, every skill applies this rule:
+Before any gateway call, every gateway-calling skill applies these
+rules. Full details live in each skill's SKILL.md; the summary here is
+just so the two rulesets stay in sync.
+
+**`eod-drafter`** — multi-signal, fail-closed. A Granola meeting is
+quarantined if **any** of the following is true:
 
 ```
-if any(participant_domain in $CLIENT_DOMAINS
-       for participant_domain in current_input.participants):
-    strip_summary_and_next_steps(current_input)
-    replace_title(current_input, f"Client sync ({dominant_domain})")
+- a participant email host equals or ends in ".<client-domain>"
+  for any entry in $CLIENT_DOMAINS  (host suffix, "." boundary,
+  never substring — see SKILL.md §3d)
+- meeting title contains a client stem ("natera", "goengen")
+- meeting folder is a known client folder
+- participants list is empty AND no folder signal (unknown → quarantine)
 ```
 
-For `follow-up-radar`, the equivalent rule is even stricter: if
-`current_input.channel_name` starts with `client-`, the message is
-dropped entirely before the classifier ever sees it.
+Quarantined meetings surface to the LLM as
+`title="Client sync (<domain>)"` + Granola link + `quarantined: true`.
+No summary, no next-steps, no participant emails leave Slack.
+
+Additionally, every Slack entry whose `channel` starts with `#client-`
+has its `text` field stripped before the gateway call. Only
+`channel`, `permalink`, `ts`, and a char count survive.
+
+**`follow-up-radar`** — even stricter: any channel matching
+`excluded_prefixes` (default `#client-`) is filtered out at search time
+in §2, and a second post-search guardrail in §3 drops any message that
+slipped through. The classifier never sees a client-channel message
+body in v0.1.
 
 ## Never fall back to a direct provider
 
