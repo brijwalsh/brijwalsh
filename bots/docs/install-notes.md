@@ -11,6 +11,12 @@ skill at the repo root. That way `.cursor/install-skills.sh` in
 
 ## Moving them — recommended (git mv-style)
 
+Run `bots/docs/promote-to-user-skills.sh`. It automates every step below
+and refuses to leave broken relative links behind.
+
+The raw steps are kept below as reference so nothing is lost, and so the
+script's behavior stays auditable against them.
+
 Once this PR is merged, do a follow-up in `cursor-user-skills`:
 
 ```bash
