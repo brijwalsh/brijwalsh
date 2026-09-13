@@ -94,16 +94,25 @@ schedules, first-run smoke tests — per
 
 ## Running the test harness
 
-Two local checks, no extra packages. Details in
-[`tests/README.md`](./tests/README.md).
+Local checks only, no extra packages, no CI wiring (that's v0.3).
+Details in [`tests/README.md`](./tests/README.md).
 
 ```bash
 bash bots/eyes/tests/test_ranking.sh
 bash bots/follow-up-radar/tests/test_regex_classifier.sh
+
+# eod-drafter: clustering, multi-signal quarantine, client mapping,
+# redaction — the deterministic steps ahead of the (never-called) gateway
+bash bots/eod-drafter/tests/test_clustering.sh
+bash bots/eod-drafter/tests/test_quarantine.sh
+bash bots/eod-drafter/tests/test_client_mapping.sh
+bash bots/eod-drafter/tests/test_redaction.sh
 ```
 
-`eod-drafter` has no automated tests in v0.1 because its output is
-LLM-generated. Deferred to v0.2, when a mock gateway exists.
+`eod-drafter`'s drafted EOD text itself is still untested because it's
+LLM-generated; that part stays manual. Everything upstream of the
+gateway call — clustering, quarantine, client mapping, redaction — now
+has fixture-driven coverage in [`eod-drafter/tests/`](./eod-drafter/tests/README.md).
 
 ## Non-goals (never in any version)
 

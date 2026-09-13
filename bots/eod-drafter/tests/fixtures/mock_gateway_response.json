@@ -1,0 +1,19 @@
+{
+  "_note": "Canned Anthropic-messages-shape response. This harness NEVER calls a real gateway -- this file is what a future mock-gateway stub would hand back to the drafter's post-processing step (SKILL.md \u00a77) instead of an HTTP call. None of the four test_*.sh scripts in this directory invoke this file; it is here so a later v0.3 harness that stubs \u00a76 has a fixture to start from, and so this PR proves it never needs a real GATEWAY_BASE_URL/GATEWAY_API_KEY to exist.",
+  "id": "msg_mock_01HXYZFAKEID000000000001",
+  "type": "message",
+  "role": "assistant",
+  "model": "claude-sonnet-5",
+  "content": [
+    {
+      "type": "text",
+      "text": "Today\n• Merged gateway retry middleware (<https://github.com/liatrio-forge/project-ai-gateway/pull/101|#101>) and the auth rotation doc (<https://github.com/liatrio-forge/project-ai-gateway/pull/103|#103>); timeout config PR (<https://github.com/liatrio-forge/project-ai-gateway/pull/102|#102>) still open\n• Reviewed the circuit-breaker PR (<https://github.com/liatrio-forge/project-ai-gateway/pull/99|#99>) on the gateway client\n• Shipped the dashboard tooltip fix (<https://github.com/liatrio-forge/project-marketing-dashboard/pull/44|#44>); export-to-csv (<https://github.com/liatrio-forge/project-marketing-dashboard/pull/45|#45>) still open, refactor review in progress\n• 5 client calls today, ~2h20m total — details stay in Slack\n\nTomorrow\n• Land the export-to-csv PR review\n• Follow up on the gateway timeout config PR\n\n*Sent using* <@U093DJ468EN|Cursor>"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 3184,
+    "output_tokens": 151
+  }
+}

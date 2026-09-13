@@ -1,0 +1,61 @@
+{
+  "_note": "Expected quarantine verdicts against fixtures/granola_meetings.json, computed by literally transcribing SKILL.md \u00a73d (see tests/quarantine_lib.py). CLIENT_DOMAINS = natera.com,goengen.com (fixtures/client_domains.env).",
+  "meetings": [
+    {
+      "meeting_id": "gr-1001",
+      "quarantined": true,
+      "dominant": "natera.com",
+      "signal": "participant_hit",
+      "justification": "alice@natera.com is a known_participants entry -> Rule 1 (participant email host match)."
+    },
+    {
+      "meeting_id": "gr-1002",
+      "quarantined": true,
+      "dominant": "natera.com",
+      "signal": "participant_hit",
+      "justification": "dave@natera.com is the host but SKILL.md has no separate host concept -- the host is just another known_participants entry, so it hits Rule 1 the same as any other client-domain attendee."
+    },
+    {
+      "meeting_id": "gr-1003",
+      "quarantined": false,
+      "dominant": "unknown",
+      "signal": "none",
+      "justification": "TODO(#eod-quarantine-gaps-0428): all-internal participants, no client title stem, no client folder. Summary/next_steps mention contact@natera.com but SKILL.md's 4 signals never scan summary/next_steps text, so the CURRENT SKILL.md does not quarantine this meeting. Expected to flip to quarantined once #eod-quarantine-gaps-0428 adds content scanning."
+    },
+    {
+      "meeting_id": "gr-1004",
+      "quarantined": false,
+      "dominant": "unknown",
+      "signal": "none",
+      "justification": "TODO(#eod-quarantine-gaps-0428): all-internal participants, no folder. Title 'enGen QBR' does not match SKILL.md's title_hit check, which only tests the literal CLIENT_DOMAINS stems 'natera' and 'goengen' (via d.split('.')[0]) -- not 'engen'. The CURRENT SKILL.md does not quarantine this meeting. This is the case named in the task brief as expected to flip once #eod-quarantine-gaps-0428 lands."
+    },
+    {
+      "meeting_id": "gr-1005",
+      "quarantined": false,
+      "dominant": "unknown",
+      "signal": "none",
+      "justification": "All-internal participants, no client title/folder/content signals anywhere -- the clean-run control case."
+    },
+    {
+      "meeting_id": "gr-1006",
+      "quarantined": true,
+      "dominant": "unknown",
+      "signal": "unknown_attendance",
+      "justification": "known_participants key is entirely missing (malformed/partial Granola metadata). Fail-closed: no participants + no folder -> quarantined even though no client domain was ever observed."
+    },
+    {
+      "meeting_id": "gr-1007",
+      "quarantined": true,
+      "dominant": "goengen.com",
+      "signal": "participant_hit+folder_hit",
+      "justification": "bob@goengen.com is a known_participants entry (Rule 1) AND folder == 'engen' (Rule 3) -- double-hit."
+    },
+    {
+      "meeting_id": "gr-1008",
+      "quarantined": true,
+      "dominant": "natera.com",
+      "signal": "participant_hit",
+      "justification": "Both alice@natera.com and bob@goengen.com are known_participants entries; either alone would trigger Rule 1. Dominant is 'natera.com' because SKILL.md's dominant-selection walks CLIENT_DOMAINS in the order given (natera.com first) and picks the first domain that has a participant match, independent of the tie-break rule used for client-mapping (see expected_client_mapping.json)."
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "_note": "Synthetic fixture. Fake authors, fake PR numbers, fake repos. Shaped like `gh search prs --json ...` + the §3a review GraphQL query in SKILL.md.",
+  "known_repos": [
+    "project-ai-gateway",
+    "project-marketing-dashboard",
+    "brwalsh",
+    "project-forge-migration"
+  ],
+  "prs": [
+    {
+      "number": 101,
+      "title": "Add gateway retry middleware",
+      "state": "MERGED",
+      "url": "https://github.com/liatrio-forge/project-ai-gateway/pull/101",
+      "repository": { "nameWithOwner": "liatrio-forge/project-ai-gateway" },
+      "updatedAt": "2026-09-15T14:22:00-05:00",
+      "author": "alice-fake"
+    },
+    {
+      "number": 102,
+      "title": "Fix gateway timeout config",
+      "state": "OPEN",
+      "url": "https://github.com/liatrio-forge/project-ai-gateway/pull/102",
+      "repository": { "nameWithOwner": "liatrio-forge/project-ai-gateway" },
+      "updatedAt": "2026-09-15T13:05:00-05:00",
+      "author": "brian-fake"
+    },
+    {
+      "number": 103,
+      "title": "Add gateway auth rotation doc",
+      "state": "MERGED",
+      "url": "https://github.com/liatrio-forge/project-ai-gateway/pull/103",
+      "repository": { "nameWithOwner": "liatrio-forge/project-ai-gateway" },
+      "updatedAt": "2026-09-15T10:15:00-05:00",
+      "author": "dana-fake"
+    },
+    {
+      "number": 44,
+      "title": "Chart tooltip overflow fix",
+      "state": "MERGED",
+      "url": "https://github.com/liatrio-forge/project-marketing-dashboard/pull/44",
+      "repository": { "nameWithOwner": "liatrio-forge/project-marketing-dashboard" },
+      "updatedAt": "2026-09-15T11:00:00-05:00",
+      "author": "erin-fake"
+    },
+    {
+      "number": 45,
+      "title": "Add export-to-csv button",
+      "state": "OPEN",
+      "url": "https://github.com/liatrio-forge/project-marketing-dashboard/pull/45",
+      "repository": { "nameWithOwner": "liatrio-forge/project-marketing-dashboard" },
+      "updatedAt": "2026-09-15T09:40:00-05:00",
+      "author": "brian-fake"
+    },
+    {
+      "number": 8,
+      "title": "Heartbeat DMs on clean runs",
+      "state": "MERGED",
+      "url": "https://github.com/BriWalsh/brwalsh/pull/8",
+      "repository": { "nameWithOwner": "BriWalsh/brwalsh" },
+      "updatedAt": "2026-09-15T09:30:00-05:00",
+      "author": "brian-fake"
+    }
+  ],
+  "reviews": [
+    {
+      "pull_request": {
+        "number": 99,
+        "title": "Add circuit breaker to gateway client",
+        "url": "https://github.com/liatrio-forge/project-ai-gateway/pull/99",
+        "repository": { "nameWithOwner": "liatrio-forge/project-ai-gateway" }
+      }
+    },
+    {
+      "pull_request": {
+        "number": 40,
+        "title": "Refactor dashboard data-fetch layer",
+        "url": "https://github.com/liatrio-forge/project-marketing-dashboard/pull/40",
+        "repository": { "nameWithOwner": "liatrio-forge/project-marketing-dashboard" }
+      }
+    },
+    {
+      "pull_request": {
+        "number": 6,
+        "title": "Tidy README formatting",
+        "url": "https://github.com/BriWalsh/brwalsh/pull/6",
+        "repository": { "nameWithOwner": "BriWalsh/brwalsh" }
+      }
+    }
+  ]
+}
