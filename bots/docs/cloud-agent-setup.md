@@ -35,6 +35,7 @@ field, the name in "key," exactly as written below (case-sensitive).
 | `GATEWAY_MODEL` | eod-drafter, follow-up-radar | Required | Model name that gateway expects |
 | `GATEWAY_TASK_TYPE` | eod-drafter, follow-up-radar | Optional | Each skill defaults this itself (`eod-draft`, `commitment-radar`) — only set if overriding |
 | `CLIENT_DOMAINS` | eod-drafter | Optional | Defaults `natera.com,goengen.com` — only set if the client list changes |
+| `CLIENT_TITLE_ALIASES` | eod-drafter | Optional | JSON object `{"domain.com": ["Alias1", "Alias2"]}`. Built-in defaults already cover `goengen.com` (`enGen`, `EnGen`) and `natera.com` (`Natera`, `Panorama`, `Signatera`, `Prospera`). Set only to extend that table. Malformed JSON fails closed (preflight abort). |
 
 `eyes` needs none of these — it does zero gateway calls in v0.1.
 

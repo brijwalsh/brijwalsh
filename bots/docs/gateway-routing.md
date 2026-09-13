@@ -14,11 +14,13 @@ env var and rule below.
 ## Env vars every skill respects
 
 ```
-GATEWAY_BASE_URL    OpenAI-compatible endpoint of the current daily-driver
-GATEWAY_API_KEY     Bearer token
-GATEWAY_MODEL       Model name to request (e.g. claude-sonnet-5)
-GATEWAY_TASK_TYPE   Optional; skill-specific default if unset
-CLIENT_DOMAINS      Comma-sep, defaults "natera.com,goengen.com"
+GATEWAY_BASE_URL      OpenAI-compatible endpoint of the current daily-driver
+GATEWAY_API_KEY       Bearer token
+GATEWAY_MODEL         Model name to request (e.g. claude-sonnet-5)
+GATEWAY_TASK_TYPE     Optional; skill-specific default if unset
+CLIENT_DOMAINS        Comma-sep, defaults "natera.com,goengen.com"
+CLIENT_TITLE_ALIASES  Optional JSON {"domain.com": ["Alias", ...]};
+                      built-in defaults cover goengen.com + natera.com
 ```
 
 Where does the value come from?
@@ -67,6 +69,11 @@ quarantined if **any** of the following is true:
 - meeting title contains a client stem ("natera", "goengen")
 - meeting folder is a known client folder
 - participants list is empty AND no folder signal (unknown → quarantine)
+- title, summary, or Granola notes contain any title_hint from the
+  client alias table (built-in: goengen.com → enGen/EnGen;
+  natera.com → Natera/Panorama/Signatera/Prospera), case-insensitive.
+  Extend via $CLIENT_TITLE_ALIASES. This is the related-to-client
+  signal: an internal-only "Prep for enGen QBR" still quarantines.
 ```
 
 Quarantined meetings surface to the LLM as
