@@ -92,6 +92,19 @@ schedules, first-run smoke tests — per
    `#liatrio-weekly-workstream-updates`. Not "I built three bots" — the
    *reusable pattern* that any Delivery Principal can pick up.
 
+## Running the test harness
+
+Two local checks, no extra packages. Details in
+[`tests/README.md`](./tests/README.md).
+
+```bash
+bash bots/eyes/tests/test_ranking.sh
+bash bots/follow-up-radar/tests/test_regex_classifier.sh
+```
+
+`eod-drafter` has no automated tests in v0.1 because its output is
+LLM-generated. Deferred to v0.2, when a mock gateway exists.
+
 ## Non-goals (never in any version)
 
 - Anything that posts to a client channel automatically

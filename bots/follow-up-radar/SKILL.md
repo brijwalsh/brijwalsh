@@ -165,7 +165,15 @@ Markdown table cell; **at runtime the skill uses unescaped `|` as the
 regex alternation operator**. If the skill ever runs these patterns
 verbatim as written in the table, alternation breaks silently.
 
-If no candidates, DM Brian a one-liner and exit.
+If no candidates, DM Brian one line and exit. Do not call the gateway.
+`HH:MM` is current time in `America/Chicago`:
+
+```
+:radar: radar clean at HH:MM CT — no aging commitments in the last 7 days.
+```
+
+Slack-only. That heartbeat is how Brian tells a clean scan from a
+missed run. Keep it one line so he can filter it.
 
 ## 5. Classify each candidate
 
@@ -232,6 +240,11 @@ skill exits after logging the digest it would have sent. `--dry-run`
 must never call `slack_send_message`.
 
 ## 8. Compose the digest
+
+If the working set is empty after §5–§6 (every candidate dropped for
+confidence, or none ranked into the digest), send the same clean-run
+heartbeat from §4 instead of an empty digest. Still Slack-only; do not
+call the gateway again.
 
 Before rendering `commitment_text` into the digest, clean the Slack
 markup per [`../eyes/SKILL.md`](../eyes/SKILL.md) §3 snippet-cleaning

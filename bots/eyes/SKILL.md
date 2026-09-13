@@ -75,8 +75,16 @@ Notes:
   to the caller's own reactions.
 - `limit` max is 20, not 50. Don't ask for more; Slack will 400.
 - `only_my_channels: true` prevents shared/bot-hosted false positives.
-- If the search returns 0 items, DM Brian one line
-  (`:eyes: nothing in the queue — inbox zero on reading debt.`) and exit.
+- If the search returns 0 items, DM Brian one line and exit. Slack-only;
+  do not call any other tool. `HH:MM` is current time in
+  `America/Chicago`:
+
+  ```
+  :eyes: reading queue clean at HH:MM CT — nothing bookmarked in the last 7 days.
+  ```
+
+  That heartbeat is how Brian tells a clean queue from a missed run.
+  Keep it one line so he can filter it.
 
 ## 3. Enrich each item — no extra API calls
 

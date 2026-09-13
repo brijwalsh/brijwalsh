@@ -1,0 +1,380 @@
+[
+  {
+    "iid": "eyes-pr-gateway-stale",
+    "type": "message",
+    "text": "gateway cutover PR is up: <https://github.com/liatrio-forge/ai-gateway/pull/45|#45> — needs a second review",
+    "ts": "1788827760.000101",
+    "user": "U0A0T8FV12B",
+    "user_name": "brian.walsh",
+    "username": "brian.walsh",
+    "permalink": "https://liatrio.slack.com/archives/C0BT5J2EX32/p1788827760000101",
+    "reply_count": 1,
+    "channel": {
+      "id": "C0BT5J2EX32",
+      "name": "project-ai-gateway",
+      "is_channel": true,
+      "is_private": false,
+      "is_im": false,
+      "is_mpim": false
+    }
+  },
+  {
+    "iid": "eyes-pr-client-stale",
+    "type": "message",
+    "text": "natera delivery PR: <https://github.com/liatrio/natera-delivery/pull/88|pull/88> waiting on Brian's :eyes:",
+    "ts": "1788793200.000102",
+    "user": "U0AMBER01",
+    "username": "amber.viau",
+    "permalink": "https://liatrio.slack.com/archives/C0CLIENTNAT/p1788793200000102",
+    "reply_count": 0,
+    "channel": {
+      "id": "C0CLIENTNAT",
+      "name": "client-natera-delivery",
+      "is_channel": true,
+      "is_private": true,
+      "is_im": false,
+      "is_mpim": false
+    }
+  },
+  {
+    "iid": "eyes-doc-mkt-stale",
+    "type": "message",
+    "text": "dashboard IA notes in <https://www.notion.so/liatrio/Marketing-dashboard-IA-9f3c|Notion>",
+    "ts": "1788758640.000103",
+    "user": "U0CRAIG01",
+    "user_name": "craig.snyder",
+    "permalink": "https://liatrio.slack.com/archives/C0BML862K61/p1788758640000103",
+    "reply_count": 2,
+    "channel": {
+      "id": "C0BML862K61",
+      "name": "project-marketing-dashboard",
+      "is_channel": true,
+      "is_private": false,
+      "is_im": false,
+      "is_mpim": false
+    }
+  },
+  {
+    "iid": "eyes-doc-liatrio-stale",
+    "type": "message",
+    "text": "please read the weekly wrap in <https://docs.google.com/document/d/1abcWeeklyWrap/edit|this doc>",
+    "ts": "1788810480.000104",
+    "user": "U0BLAIR01",
+    "user_name": "blair.morris",
+    "permalink": "https://liatrio.slack.com/archives/C2S6MBNJH/p1788810480000104",
+    "reply_count": 0,
+    "channel": {
+      "id": "C2S6MBNJH",
+      "name": "liatrio",
+      "is_channel": true,
+      "is_private": false,
+      "is_im": false,
+      "is_mpim": false
+    }
+  },
+  {
+    "iid": "eyes-pr-gateway-fresh",
+    "type": "message",
+    "text": "opened <https://github.com/liatrio-forge/ai-gateway/pull/51|#51> for the LiteLLM timeout",
+    "ts": "1789182000.000105",
+    "user": "U0ALEX01",
+    "username": "alex.bauhardt",
+    "permalink": "https://liatrio.slack.com/archives/C0BT5J2EX32/p1789182000000105",
+    "reply_count": 0,
+    "channel": {
+      "id": "C0BT5J2EX32",
+      "name": "project-ai-gateway",
+      "is_channel": true,
+      "is_private": false,
+      "is_im": false,
+      "is_mpim": false
+    }
+  },
+  {
+    "iid": "eyes-doc-client-mid",
+    "type": "message",
+    "text": "updated the confluence page for the natera cutover checklist",
+    "ts": "1789095600.000106",
+    "user": "U0A0T8FV12B",
+    "user_name": "brian.walsh",
+    "permalink": "https://liatrio.slack.com/archives/C0CLIENTNAT/p1789095600000106",
+    "reply_count": 1,
+    "channel": {
+      "id": "C0CLIENTNAT",
+      "name": "client-natera-delivery",
+      "is_channel": true,
+      "is_private": true,
+      "is_im": false,
+      "is_mpim": false
+    }
+  },
+  {
+    "iid": "eyes-pr-dm-fresh",
+    "type": "message",
+    "text": "can you glance at <https://github.com/liatrio-forge/cursor-skills/pull/12|this PR> when you have a minute",
+    "ts": "1789251120.000107",
+    "user": "U0CHELSEA01",
+    "username": "chelsea.ursenbach",
+    "permalink": "https://liatrio.slack.com/archives/D0ADV5K7280/p1789251120000107",
+    "reply_count": 0,
+    "channel": {
+      "id": "D0ADV5K7280",
+      "is_channel": false,
+      "is_private": true,
+      "is_im": true,
+      "is_mpim": false
+    },
+    "Participants": [
+      {"id": "U0A0T8FV12B", "name": "Brian Walsh", "display_name": "brian.walsh"},
+      {"id": "U0CHELSEA01", "name": "Chelsea Ursenbach", "display_name": "chelsea.ursenbach"}
+    ]
+  },
+  {
+    "iid": "eyes-doc-gdm-mid",
+    "type": "message",
+    "text": "blog draft is on <https://www.liatr.io/engineering/gateway-notes|liatr.io> if anyone wants a pass",
+    "ts": "1789009200.000108",
+    "user": "U0RON01",
+    "user_name": "ron.collins",
+    "permalink": "https://liatrio.slack.com/archives/C0GDMREAD01/p1789009200000108",
+    "reply_count": 2,
+    "channel": {
+      "id": "C0GDMREAD01",
+      "is_channel": false,
+      "is_private": true,
+      "is_im": false,
+      "is_mpim": true
+    },
+    "Participants": [
+      {"id": "U0A0T8FV12B", "name": "Brian Walsh", "display_name": "brian.walsh"},
+      {"id": "U0RON01", "name": "Ron Collins", "display_name": "ron.collins"},
+      {"id": "U0CRAIG01", "name": "Craig Snyder", "display_name": "craig.snyder"}
+    ]
+  },
+  {
+    "iid": "eyes-article-project-stale",
+    "type": "message",
+    "text": "this is the piece I bookmarked: <https://www.infoq.com/articles/llm-gateway-routing|InfoQ on gateway routing>",
+    "ts": "1788793200.000109",
+    "user": "U0A0T8FV12B",
+    "user_name": "brian.walsh",
+    "permalink": "https://liatrio.slack.com/archives/C0BT5J2EX32/p1788793200000109",
+    "reply_count": 0,
+    "channel": {
+      "id": "C0BT5J2EX32",
+      "name": "project-ai-gateway",
+      "is_channel": true,
+      "is_private": false,
+      "is_im": false,
+      "is_mpim": false
+    }
+  },
+  {
+    "iid": "eyes-thread-client-stale",
+    "type": "message",
+    "text": "long thread on the enGen env promotion order. Starting here.",
+    "ts": "1788767280.000110",
+    "user": "U0AMBER01",
+    "username": "amber.viau",
+    "permalink": "https://liatrio.slack.com/archives/C0CLIENTENG/p1788767280000110",
+    "reply_count": 5,
+    "channel": {
+      "id": "C0CLIENTENG",
+      "name": "client-engen-delivery",
+      "is_channel": true,
+      "is_private": true,
+      "is_im": false,
+      "is_mpim": false
+    }
+  },
+  {
+    "iid": "eyes-msg-project-stale",
+    "type": "message",
+    "text": "parking this so I remember to close the dashboard copy pass",
+    "ts": "1788750000.000111",
+    "user": "U0A0T8FV12B",
+    "user_name": "brian.walsh",
+    "permalink": "https://liatrio.slack.com/archives/C0BML862K61/p1788750000000111",
+    "reply_count": 0,
+    "channel": {
+      "id": "C0BML862K61",
+      "name": "project-marketing-dashboard",
+      "is_channel": true,
+      "is_private": false,
+      "is_im": false,
+      "is_mpim": false
+    }
+  },
+  {
+    "iid": "eyes-article-liatrio-stale",
+    "type": "message",
+    "text": "worth a Saturday read: https://www.nytimes.com/2026/09/07/technology/enterprise-ai-gateways.html",
+    "ts": "1788836400.000112",
+    "user": "U0BLAIR01",
+    "username": "blair.morris",
+    "permalink": "https://liatrio.slack.com/archives/C2S6MBNJH/p1788836400000112",
+    "reply_count": 1,
+    "channel": {
+      "id": "C2S6MBNJH",
+      "name": "liatrio",
+      "is_channel": true,
+      "is_private": false,
+      "is_im": false,
+      "is_mpim": false
+    }
+  },
+  {
+    "iid": "eyes-thread-forge-stale",
+    "type": "message",
+    "text": "forge module naming bikeshed continues in this thread",
+    "ts": "1788819120.000113",
+    "user": "U0CHELSEA01",
+    "user_name": "chelsea.ursenbach",
+    "permalink": "https://liatrio.slack.com/archives/C0AE9CLD7CH/p1788819120000113",
+    "reply_count": 4,
+    "channel": {
+      "id": "C0AE9CLD7CH",
+      "name": "liatrio-forge",
+      "is_channel": true,
+      "is_private": false,
+      "is_im": false,
+      "is_mpim": false
+    }
+  },
+  {
+    "iid": "eyes-msg-dm-stale",
+    "type": "message",
+    "text": "remind me about the school pickup swap next week",
+    "ts": "1788879600.000114",
+    "user": "U0SPOUSE01",
+    "username": "home.dm",
+    "permalink": "https://liatrio.slack.com/archives/D0HOMEDM001/p1788879600000114",
+    "reply_count": 0,
+    "channel": {
+      "id": "D0HOMEDM001",
+      "is_im": true,
+      "is_mpim": false,
+      "is_channel": false,
+      "is_private": true
+    },
+    "Participants": [
+      {"id": "U0A0T8FV12B", "name": "Brian Walsh", "display_name": "brian.walsh"},
+      {"id": "U0SPOUSE01", "name": "Home", "display_name": "home"}
+    ]
+  },
+  {
+    "iid": "eyes-thread-project-fresh",
+    "type": "message",
+    "text": "unrelated to the PRs: standup notes from Tuesday, lots of replies",
+    "ts": "1789182000.000115",
+    "user": "U0ALEX01",
+    "user_name": "alex.bauhardt",
+    "permalink": "https://liatrio.slack.com/archives/C0BT5J2EX32/p1789182000000115",
+    "reply_count": 8,
+    "channel": {
+      "id": "C0BT5J2EX32",
+      "name": "project-ai-gateway",
+      "is_channel": true,
+      "is_private": false,
+      "is_im": false,
+      "is_mpim": false
+    }
+  },
+  {
+    "iid": "eyes-article-client-mid",
+    "type": "message",
+    "text": "client shared this overnight: <https://medium.com/@vendor/why-apim-still-matters-2026|Medium on APIM>",
+    "ts": "1789095600.000116",
+    "user": "U0AMBER01",
+    "username": "amber.viau",
+    "permalink": "https://liatrio.slack.com/archives/C0CLIENTNAT/p1789095600000116",
+    "reply_count": 0,
+    "channel": {
+      "id": "C0CLIENTNAT",
+      "name": "client-natera-delivery",
+      "is_channel": true,
+      "is_private": true,
+      "is_im": false,
+      "is_mpim": false
+    }
+  },
+  {
+    "iid": "eyes-msg-project-fresh",
+    "type": "message",
+    "text": "quick ping: I'll be 10 min late to the dashboard standup",
+    "ts": "1789268400.000117",
+    "user": "U0CRAIG01",
+    "user_name": "craig.snyder",
+    "permalink": "https://liatrio.slack.com/archives/C0BML862K61/p1789268400000117",
+    "reply_count": 0,
+    "channel": {
+      "id": "C0BML862K61",
+      "name": "project-marketing-dashboard",
+      "is_channel": true,
+      "is_private": false,
+      "is_im": false,
+      "is_mpim": false
+    }
+  },
+  {
+    "iid": "eyes-thread-liatrio-mid",
+    "type": "message",
+    "text": "issue link only, not a PR: <https://github.com/liatrio-forge/ai-gateway/issues/77|#77> and the thread under it",
+    "ts": "1789009200.000118",
+    "user": "U0ALEX01",
+    "username": "alex.bauhardt",
+    "permalink": "https://liatrio.slack.com/archives/C2S6MBNJH/p1789009200000118",
+    "reply_count": 3,
+    "channel": {
+      "id": "C2S6MBNJH",
+      "name": "liatrio",
+      "is_channel": true,
+      "is_private": false,
+      "is_im": false,
+      "is_mpim": false
+    }
+  },
+  {
+    "iid": "eyes-article-dm-fresh",
+    "type": "message",
+    "text": "this is the ars piece: <https://arstechnica.com/ai/2026/09/routing-layers/|Ars on routing layers>",
+    "ts": "1789182000.000119",
+    "user": "U0CHELSEA01",
+    "user_name": "chelsea.ursenbach",
+    "permalink": "https://liatrio.slack.com/archives/D0ADV5K7280/p1789182000000119",
+    "reply_count": 0,
+    "channel": {
+      "id": "D0ADV5K7280",
+      "is_im": true,
+      "is_mpim": false,
+      "is_channel": false,
+      "is_private": true
+    },
+    "Participants": [
+      {"id": "U0A0T8FV12B", "name": "Brian Walsh", "display_name": "brian.walsh"},
+      {"id": "U0CHELSEA01", "name": "Chelsea Ursenbach", "display_name": "chelsea.ursenbach"}
+    ]
+  },
+  {
+    "iid": "eyes-msg-gdm-fresh",
+    "type": "message",
+    "text": "two links, so this is not an article: <https://www.theverge.com/ai/2026/1|Verge> and <https://www.wired.com/story/llm-ops|Wired>",
+    "ts": "1789225200.000120",
+    "user": "U0RON01",
+    "username": "ron.collins",
+    "permalink": "https://liatrio.slack.com/archives/C0GDMREAD01/p1789225200000120",
+    "reply_count": 1,
+    "channel": {
+      "id": "C0GDMREAD01",
+      "is_channel": false,
+      "is_private": true,
+      "is_im": false,
+      "is_mpim": true
+    },
+    "Participants": [
+      {"id": "U0A0T8FV12B", "name": "Brian Walsh", "display_name": "brian.walsh"},
+      {"id": "U0RON01", "name": "Ron Collins", "display_name": "ron.collins"},
+      {"id": "U0CRAIG01", "name": "Craig Snyder", "display_name": "craig.snyder"}
+    ]
+  }
+]
