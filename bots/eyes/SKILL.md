@@ -191,3 +191,70 @@ If v0.1 works and Brian wants dedup/clear/aging, that's v0.2 in
 
 See [`runbook.md`](./runbook.md) for the Cursor Cloud Agent schedule config
 and manual invocation.
+
+## v0.2 additions (design preview)
+
+Full design: [`v0.2-dedup-design.md`](./v0.2-dedup-design.md).
+
+These rules add to v0.1. They do not take effect until the v0.2 deploy creates
+the private Slack List and records its ID in this skill.
+
+### Read state
+
+- Read every page of the fixed Slack List before searching.
+- Index rows by permalink. The permalink is the logical primary key.
+- Load recent `open` rows, due `snoozed` rows, the latest digest rank map, and
+  expired rows that can be reused.
+- Fail closed if the list is missing, unreadable, or has the wrong schema.
+  Never fall back to the repeating v0.1 path.
+- If a permalink has duplicate rows, keep the oldest as canonical, suppress the
+  others from the digest, and reconcile them in the write phase.
+
+### Merge
+
+- Search with the existing 7-day `hasmy::eyes:` query.
+- New permalink: prepare an `open` row with `first_seen_ts=now`.
+- Existing permalink: retain `first_seen_ts` and update `last_seen_ts`.
+- Never reopen a `cleared` row from search alone.
+- Daily output includes new and due-snoozed items. Previously digested open
+  rows stay out unless Brian runs `/eyes --all`.
+- Only infer reaction removal when the search returns fewer than its 20-item
+  cap. At the cap, absence is ambiguous.
+
+### Rank and compose
+
+Rank by awareness age first: `now - first_seen_ts`, descending. Then apply the
+v0.1 class, Slack age, channel, and timestamp tie-breakers.
+
+Render queue age as `Xd on your list`:
+
+```text
+1. [doc] `#project-ai-gateway` · Example Person · 4d on your list
+```
+
+### Write state
+
+- DM the digest before changing state.
+- After a successful DM, upsert every fresh result in one bounded write phase.
+- Store the digest message timestamp and rank only on rows shown in the digest.
+- Scheduled updates must not write `state` for an existing row. This keeps a
+  concurrent manual clear from being overwritten.
+- Slack Lists have no batch upsert or uniqueness constraint. Retry by row,
+  check the permalink before retrying an insert, and reconcile duplicates.
+
+### Clear
+
+Primary:
+
+```text
+/eyes clear 3
+```
+
+Resolve rank 3 against the latest stored digest and partially update that row
+to `cleared`. This works even when the original `:eyes:` reaction remains.
+
+Fallback: when an exhaustive fresh search no longer returns an open permalink,
+mark it `cleared` with source `eyes_removed`.
+
+Do not use `:x:` or `:done:` on a single digest message as a rank command. A
+reaction identifies the message, not one numbered line inside it.

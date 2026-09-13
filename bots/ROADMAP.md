@@ -21,8 +21,8 @@ Options, ranked:
    Overkill for v0.2; only if the gist approach hits size caps.
 
 Once state exists:
-- `eyes` gets dedup + `clear` semantics (manually via editing the gist,
-  since we still lack a webhook)
+- [`eyes` v0.2 durable dedup design](./eyes/v0.2-dedup-design.md) defines the
+  Slack List schema, age-aware ranking, daily suppression, and clear flow
 - `eod-drafter` gets friction.jsonl + Friday summary
 - `follow-up-radar` gets aging + `clear`
 
