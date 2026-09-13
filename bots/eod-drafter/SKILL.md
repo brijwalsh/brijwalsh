@@ -175,6 +175,15 @@ channel name, first 300 chars, permalink. Group by channel. Messages
 inside `#client-*` channels are handled specially in §5 — their `text`
 field is stripped before the gateway call, regardless of who posted it.
 
+For every message that survives, clean the Slack markup per
+[`../eyes/SKILL.md`](../eyes/SKILL.md) §3 snippet-cleaning rules (steps
+1–7): collapse `<URL|label>`, `<@USERID|handle>`, `<#ID|name>`,
+`<!channel>`, etc. before serializing into the prompt input. The LLM
+doesn't need to see raw Slack IDs, and keeping them in risks the model
+hallucinating about who's who or copying `<@U…>` into the draft, which
+would render as an unintended @-mention when Brian pastes the draft
+back into Slack.
+
 ### 3c. Granola — today's meetings
 
 `list_meetings` returns meetings where the caller is either the

@@ -85,11 +85,42 @@ Every field the digest needs is already on the search result:
 | Digest field | Source in the search response |
 |--------------|-------------------------------|
 | permalink | `permalink` |
-| channel name | `channel.name` (fallback: `channel.id`) |
+| channel name | see channel-rendering rules below |
 | author name | `user_name` (fallback: `username` or `user`) |
-| snippet | `text`, first 200 chars, `<https://…\|label>` collapsed to `label` |
+| snippet | `text`, cleaned per snippet-cleaning rules below, first 200 chars |
 | age | now − `ts` (humanize to `Xd` / `Xw`) |
-| class | derived, see below |
+| class | derived, see class rules below |
+
+**Channel rendering.** Slack DMs and Group DMs don't have a `channel.name` —
+only `channel.id` (e.g. `D0ADV5K7280`) plus a `Participants:` array.
+Render as:
+
+| Channel type | Render as |
+|---|---|
+| Public/private channel (`channel.name` present) | `` `#<channel.name>` `` |
+| DM (participants has exactly 2 members incl. Brian) | `DM w/ <other participant's display name>` |
+| Group DM (participants has 3+ members) | `Group DM w/ <other participants, comma-separated>` |
+| Fallback (no name, no participants) | `` `<channel.id>` `` |
+
+Never surface the raw DM/Group-DM `channel.id` in the digest — it's
+unreadable and defeats the point of the reading queue.
+
+**Snippet cleaning.** Apply in this order to `text` before truncating to
+200 chars:
+
+1. `<https?://…\|label>` → `label` (Slack URL-with-label format)
+2. `<https?://…>` → the URL itself
+3. `<@USERID\|handle>` → `@handle`
+4. `<@USERID>` → `@<USERID>` (rare; happens when Slack didn't resolve
+   the handle, e.g. inactive users)
+5. `<#CHANNEL_ID\|name>` → `#name`
+6. `<!channel>` / `<!here>` / `<!everyone>` → `@channel` / `@here` /
+   `@everyone` (visual only; DM re-render doesn't broadcast)
+7. `<!subteam^S…\|name>` → `@name`
+8. Truncate to 200 chars, append `…` if truncated
+
+Steps 3–7 keep the digest from rendering as a cascade of clickable
+Slack @-mentions when Brian scrolls it.
 
 **Class** (regex-only, no LLM):
 - `pr` — text matches `github\.com/[^/]+/[^/]+/pull/\d+`

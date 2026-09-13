@@ -201,6 +201,13 @@ After the call, the skill splices the pre-computed `age_days` back onto
 each item by matching on `source_id`. Drop items with `confidence < 0.7`.
 Cap the working set at 20 candidates per run.
 
+Before sending each candidate's `context` and `focus` to the classifier,
+clean the Slack markup per the rules in
+[`../eyes/SKILL.md`](../eyes/SKILL.md) §3 (steps 1–7 of the snippet
+cleaning table): collapse `<URL|label>`, `<@USERID|handle>`, `<#ID|name>`,
+`<!channel>`, and subteam mentions. Feeding the LLM raw Slack IDs
+degrades classification and risks the LLM hallucinating about who's who.
+
 ## 6. Rank
 
 Sort descending:
@@ -225,6 +232,12 @@ skill exits after logging the digest it would have sent. `--dry-run`
 must never call `slack_send_message`.
 
 ## 8. Compose the digest
+
+Before rendering `commitment_text` into the digest, clean the Slack
+markup per [`../eyes/SKILL.md`](../eyes/SKILL.md) §3 snippet-cleaning
+rules. Otherwise `<@USERID>` mentions in the quoted text render as
+clickable @-links when Brian scrolls the DM. `<channel>` uses the same
+channel-rendering rules from §3 (public/private/`DM w/`/`Group DM w/`).
 
 DM Brian at `U0A0T8FV12B`:
 
