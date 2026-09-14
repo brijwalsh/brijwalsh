@@ -38,8 +38,15 @@ the draft. Brian edits and reposts to the target channel himself.
 - Auto-creating a `#draft-eods` channel (Slack default is public — leak risk)
 - Rotation YAML across four gateways (v0.1 uses a single env var)
 - `friction.jsonl` persistence (VM-ephemeral; needs a real state store)
-- Friday's weekly friction summary
+- Friday's weekly *gateway-friction* summary (different from the
+  Friday fleet-review addendum in §7c, which ships in this version)
 - `/eod-friction` reply-listener (no Slack event trigger available)
+
+**Also in scope for v0.1** (added 2026-09-14 per fleet-budget change):
+- Read [`../FLEET.md`](../FLEET.md) and append a `Fleet:` line to the
+  daily DM (§5b + §7b).
+- On Fridays, append a weekly minutes-saved rollup after the sign-off
+  (§7c).
 
 ## Non-negotiables
 
@@ -418,6 +425,61 @@ Rules the serializer must enforce, in order:
 If any of those rules would need to be relaxed for a specific draft,
 that's a v0.2 discussion, not a runtime override.
 
+## 5b. Fleet snapshot (mechanical, no LLM)
+
+Read [`../FLEET.md`](../FLEET.md) and compute the fleet snapshot the
+draft will report. This runs in parallel with §6 — the numbers are
+mechanical facts, not LLM output.
+
+```python
+from datetime import date
+from zoneinfo import ZoneInfo
+
+FLEET_PATH = os.path.join(os.path.dirname(__file__), "..", "FLEET.md")
+CT = ZoneInfo("America/Chicago")
+
+def parse_fleet(path):
+    # Find the H2 "## Brian-owned skills — budget applies", take the
+    # first pipe-table below it. Column names are the source of truth,
+    # not column indices; if a column is renamed we log and skip.
+    #
+    # Returns: {"active": int, "shipped_this_week": int,
+    #           "retired_this_week": int, "cap": int,
+    #           "active_rows": [row, ...]}
+    ...
+
+def parse_retired(path):
+    # Same file, H2 "## Retired", first table. Rows with a "Retired"
+    # date in this ISO week (America/Chicago) count.
+    ...
+
+def current_iso_week(now_ct):
+    # ISO year+week. Monday 00:00 CT → Sunday 23:59 CT.
+    return now_ct.isocalendar()[:2]
+
+try:
+    fleet = parse_fleet(FLEET_PATH)
+    retired = parse_retired(FLEET_PATH)
+except (FileNotFoundError, ValueError) as exc:
+    # Non-fatal: log and skip the fleet line. EOD still ships.
+    fleet = None
+    log(f"fleet snapshot skipped: {exc}")
+```
+
+**Cap of 3** is hard-coded here for v0.1 to match `FLEET.md`. If the
+file starts declaring a `cap:` on its own (v0.2), read it from there.
+
+**Warning conditions** — any of these flip `fleet.warn = True`, which
+turns the Fleet line into a warning marker in §7b:
+
+- `fleet.active > fleet.cap`
+- `fleet.shipped_this_week > 1`
+- `fleet.shipped_this_week > 0 and fleet.retired_this_week == 0`
+
+If the fleet parser threw and `fleet is None`, the line is omitted
+entirely rather than faked. The point of the line is honest
+visibility.
+
 ## 6. Call the gateway
 
 If §4 dropped every cluster (zero GitHub, Slack, or Granola signals in
@@ -450,7 +512,7 @@ Timeout: 15s. On 4xx: DM Brian the error and exit. On 5xx: DM Brian
 "gateway <name> is 5xx-ing — likely dogfooding data point, see logs" and
 exit (no retry, no fallback).
 
-## 7. Post-process
+## 7a. Post-process the LLM draft
 
 1. Strip any preamble ("Here's the draft:", "Sure, here you go:", etc.)
 2. Verify every link in the draft appears in the raw feed. Slack-style
@@ -462,6 +524,65 @@ exit (no retry, no fallback).
 3. Ensure the sign-off is exactly `*Sent using* <@U093DJ468EN|Cursor>`
    (Cursor bot user id).
 4. If the draft exceeds 3000 chars, trim the oldest `Today` bullets first.
+5. Drop any line the LLM emitted that starts with `:file_cabinet: Fleet:`,
+   `:calendar: Weekly review`, or "Minutes saved" — those are §7b/§7c
+   territory and must not come from the model.
+
+## 7b. Append the fleet-count line
+
+Immediately before the sign-off in §7a rule 3, insert the fleet line
+built from the §5b snapshot. Format (Slack-flavored markdown):
+
+```
+:file_cabinet: Fleet: {active}/{cap} active, {shipped_this_week} shipped this week, {retired_this_week} retired.
+```
+
+If `fleet.warn` is set, prefix `:warning: ` and append the reason:
+
+```
+:warning: :file_cabinet: Fleet: 4/3 active, 1 shipped this week, 0 retired — over cap. Retire something in FLEET.md.
+```
+
+If §5b failed (`fleet is None`), omit the line entirely. Do not fake it.
+
+## 7c. Friday variant — weekly minutes-saved rollup
+
+If the current day in `America/Chicago` is Friday, append a weekly
+review addendum **after** the sign-off (so it survives the "trim to
+3000 chars" rule in §7a — Brian only trims the Today bullets, not the
+review). Content pulled mechanically from `FLEET.md`, not the LLM:
+
+```
+:calendar: Weekly review — fleet minutes saved
+
+| Skill | Verdict | Min saved/week (est.) |
+|-------|---------|-----------------------|
+| eyes | kept | ~60 |
+| eod-drafter | kept | ~120 |
+| follow-up-radar | kept | ~30 |
+Total: ~210 min/week. Retired this week: 0. Shipped this week: 0.
+```
+
+Numbers are the sum of column 6 across active rows in the Brian-owned
+table plus the corresponding rows in the [Retired](../FLEET.md#retired)
+table with retirement dates in this ISO week. If `FLEET.md` was
+unreadable (§5b failed), skip the addendum entirely — do not send a
+partial or fabricated one.
+
+Non-Friday days: no addendum. This section fires exactly once a week.
+
+## 7d. Assemble the DM body
+
+The final message body Slack receives is:
+
+```
+<LLM draft with fleet line inserted per §7b>
+<if Friday: blank line + §7c weekly review block>
+```
+
+Never let the LLM produce the fleet line or the weekly review — they
+are trusted, mechanical, computed here. This is the whole reason
+they exist.
 
 ## 8. DM the draft
 
@@ -484,7 +605,7 @@ Preflight failures (missing secret, MCP unavailable, gateway 5xx) still
 use the existing "DM Brian and exit" path. This heartbeat is only for
 a run that completed and found nothing.
 
-Otherwise:
+Otherwise, send the §7d assembled body:
 
 ```yaml
 tool: slack_send_message
@@ -494,14 +615,16 @@ args:
     :draft-ai-gateway: *EOD draft — <date>*
 
     ```
-    <the draft>
+    <the §7d assembled body — LLM draft + fleet line + optional Friday review>
     ```
 
     _v0.1 — auto-drafted, gateway: <gateway_name>. Edit above and repost yourself._
 ```
 
 Use a code block wrapper so Slack doesn't render the draft's internal
-Slack markdown until Brian copies it out.
+Slack markdown until Brian copies it out. The fleet line and Friday
+review live inside the same code block so they travel with the draft
+into whatever channel Brian reposts to.
 
 ## 9. Guardrails
 

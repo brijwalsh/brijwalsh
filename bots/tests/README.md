@@ -18,6 +18,10 @@ bash bots/eod-drafter/tests/test_clustering.sh
 bash bots/eod-drafter/tests/test_quarantine.sh
 bash bots/eod-drafter/tests/test_client_mapping.sh
 bash bots/eod-drafter/tests/test_redaction.sh
+
+# FLEET.md schema — proves the parser eod-drafter §5b promises still
+# matches what's in bots/FLEET.md (headers, active rows, dates)
+bash bots/tests/test_fleet_parser.sh
 ```
 
 `eod-drafter`'s drafted EOD text is still untested because it's
