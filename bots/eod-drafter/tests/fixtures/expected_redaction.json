@@ -1,5 +1,5 @@
 {
-  "_note": "Expected output of quarantine_lib.redact_for_gateway() for every meeting in fixtures/granola_meetings.json. Non-quarantined meetings pass through unmodified (not listed here -- see fixtures/expected_quarantine.json for which ids those are: gr-1003, gr-1004, gr-1005).",
+  "_note": "Expected output of quarantine_lib.redact_for_gateway() for every meeting in fixtures/granola_meetings.json. Non-quarantined meetings pass through unmodified (not listed here -- see fixtures/expected_quarantine.json for which ids those are: gr-1005 only, post-PR #10). Reflects post-#eod-quarantine-gaps-0428 behavior: gr-1003 and gr-1004 both quarantine via alias_hit and are now listed below alongside the other five.",
   "meetings": [
     {
       "meeting_id": "gr-1001",
@@ -32,6 +32,38 @@
         "quarantined": true
       },
       "justification": "Same as gr-1001; the client-domain host is redacted along with every other participant, surviving only as part of attendees=2."
+    },
+    {
+      "meeting_id": "gr-1003",
+      "redacted": {
+        "meeting_id": "gr-1003",
+        "title": "Client sync (natera.com)",
+        "summary": "[redacted: client-domain meeting]",
+        "next_steps": "[redacted: client-domain meeting]",
+        "attendees": 2,
+        "duration_minutes": 45,
+        "start_time": "2026-09-15T11:00:00-05:00",
+        "end_time": "2026-09-15T11:45:00-05:00",
+        "granola_link": "https://notes.granola.ai/d/gr-1003",
+        "quarantined": true
+      },
+      "justification": "Post-PR #10 alias_hit path: the built-in `natera` alias for natera.com (lowercased) is a substring of `contact@natera.com` in the summary, so alias_hit fires and dominant resolves to natera.com. Redaction unconditionally overwrites the title to `Client sync (natera.com)` and swaps summary/next_steps for the placeholder. attendees=2 is a count of the original charlie/erin participants."
+    },
+    {
+      "meeting_id": "gr-1004",
+      "redacted": {
+        "meeting_id": "gr-1004",
+        "title": "Client sync (goengen.com)",
+        "summary": "[redacted: client-domain meeting]",
+        "next_steps": "[redacted: client-domain meeting]",
+        "attendees": 2,
+        "duration_minutes": 60,
+        "start_time": "2026-09-15T13:00:00-05:00",
+        "end_time": "2026-09-15T14:00:00-05:00",
+        "granola_link": "https://notes.granola.ai/d/gr-1004",
+        "quarantined": true
+      },
+      "justification": "Post-PR #10 alias_hit path: `enGen` is a default alias for goengen.com; lowercased it matches inside the title `enGen QBR`, so alias_hit fires and dominant resolves to goengen.com. Redaction rewrites the title to `Client sync (goengen.com)` and swaps summary/next_steps for the placeholder."
     },
     {
       "meeting_id": "gr-1006",
@@ -83,9 +115,9 @@
     }
   ],
   "aggregate_example": {
-    "quarantined_meeting_ids": ["gr-1001", "gr-1002", "gr-1006", "gr-1007", "gr-1008"],
-    "total_client_calls": 5,
-    "total_minutes": 140,
-    "justification": "Demonstrates the reason duration_minutes survives redaction: the drafter can say '5 client calls totaling 2h20m' from redacted objects alone, with zero meeting bodies or participant emails involved."
+    "quarantined_meeting_ids": ["gr-1001", "gr-1002", "gr-1003", "gr-1004", "gr-1006", "gr-1007", "gr-1008"],
+    "total_client_calls": 7,
+    "total_minutes": 245,
+    "justification": "Demonstrates the reason duration_minutes survives redaction: the drafter can say '7 client calls totaling 4h5m' from redacted objects alone, with zero meeting bodies or participant emails involved. Post-PR #10 the count is 7 (was 5) because alias_hit promotes gr-1003 and gr-1004 into the quarantined set."
   }
 }

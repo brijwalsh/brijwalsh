@@ -67,15 +67,15 @@ the cluster itself (and its char/message count) survives.
 ### `test_quarantine.sh` / `test_quarantine.py`
 
 Given `fixtures/granola_meetings.json` (8 meetings), verifies each
-meeting's quarantine verdict against `SKILL.md`'s literal 4-signal,
-fail-closed algorithm:
+meeting's quarantine verdict against `SKILL.md`'s literal 5-signal,
+fail-closed algorithm (post-PR #10):
 
 | Meeting | Signal | Verdict |
 |---|---|---|
 | `gr-1001` | client-domain participant (`alice@natera.com`) | quarantined |
 | `gr-1002` | client-domain participant who happens to be the host (`dave@natera.com`) | quarantined |
-| `gr-1003` | all-internal participants, but summary/next_steps mention `contact@natera.com` | **NOT quarantined** — see gap note below |
-| `gr-1004` | all-internal, title `enGen QBR` | **NOT quarantined** — see gap note below |
+| `gr-1003` | all-internal, summary/next_steps mention `contact@natera.com` | quarantined via `alias_hit` (built-in `natera` alias matches `natera.com` substring in summary) |
+| `gr-1004` | all-internal, title `enGen QBR` | quarantined via `alias_hit` (built-in `enGen` alias for `goengen.com`) |
 | `gr-1005` | all-internal, no client signal anywhere | not quarantined (clean-run control) |
 | `gr-1006` | malformed: `known_participants` key missing entirely | quarantined (fail-closed) |
 | `gr-1007` | client-domain participant + client folder (`folder: "engen"`) | quarantined (double-hit) |
@@ -84,32 +84,15 @@ fail-closed algorithm:
 Expected output: `fixtures/expected_quarantine.json`, with a
 `justification` string per row.
 
-**`TODO(#eod-quarantine-gaps-0428)`** — two of the eight fixtures assert
-what the CURRENT `SKILL.md` does, which is not what it should do:
-
-- `gr-1003`: `SKILL.md`'s four quarantine signals (participant email
-  host, title stem, folder, empty-attendance fail-closed) never scan
-  `summary`/`next_steps` text. A meeting with all-internal attendees
-  whose summary mentions `contact@natera.com` slips through today.
-- `gr-1004` (`enGen QBR`): `SKILL.md`'s title check only tests the
-  literal `CLIENT_DOMAINS` stems (`d.split(".")[0]`) — `natera` and
-  `goengen` — never the short form `engen`. An all-internal meeting
-  titled `enGen QBR` with no folder set is not quarantined today.
-
-Both are expected to flip to `quarantined: true` once
-`#eod-quarantine-gaps-0428` lands (content scanning for `gr-1003`,
-tighter title-stem matching for `gr-1004`). When that issue ships,
-update `expected_quarantine.json` for both ids and remove the TODO
-notes from the fixture.
-
 ### `test_client_mapping.sh` / `test_client_mapping.py`
 
 Given `fixtures/granola_meetings.json` and the pinned
 `fixtures/client_domains.env` (`CLIENT_DOMAINS=natera.com,goengen.com`),
 maps each meeting to a client key based **only** on
 `known_participants` email domains (narrower than quarantine
-eligibility — a meeting can be a quarantine edge case and still map to
-`none` here, e.g. `gr-1003`/`gr-1004`/`gr-1006`):
+eligibility — a meeting can be quarantined by title/summary/notes
+scanning yet still map to `none` here because it has no client-domain
+participant, e.g. `gr-1003`/`gr-1004`/`gr-1006`):
 
 - `@natera.com` participant → `natera`
 - `@goengen.com` participant → `engen`
@@ -153,8 +136,10 @@ per `SKILL.md` §3d) for the five that get quarantined
   calls totaling 2h20m" (see the `aggregate_example` block in
   `fixtures/expected_redaction.json`) without a single meeting body or
   participant email in play
-- The three non-quarantined meetings (`gr-1003`, `gr-1004`, `gr-1005`)
-  are checked to pass through completely unmodified
+- The single non-quarantined meeting (`gr-1005`) is checked to pass
+  through completely unmodified. Post-PR #10 both `gr-1003` and
+  `gr-1004` now quarantine via `alias_hit` and go through the redaction
+  transform instead of the pass-through path.
 
 Expected output: `fixtures/expected_redaction.json`.
 
