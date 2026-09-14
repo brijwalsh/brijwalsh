@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FDE 2×4 — Delivery Leaders Overview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0c1117;
+      --surface: #151c26;
+      --surface-2: #1c2634;
+      --text: #eef2f7;
+      --muted: #8fa3b8;
+      --accent: #2dd4bf;
+      --accent-dim: rgba(45, 212, 191, 0.14);
+      --warm: #f59e0b;
+      --warm-dim: rgba(245, 158, 11, 0.12);
+      --danger: #fb7185;
+      --line: rgba(143, 163, 184, 0.18);
+      --slide-w: min(1120px, 92vw);
+      --slide-h: min(630px, 78vh);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Instrument Sans", system-ui, sans-serif;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 45% at 85% 10%, rgba(45, 212, 191, 0.08), transparent 60%),
+        radial-gradient(ellipse 50% 40% at 5% 95%, rgba(245, 158, 11, 0.06), transparent 55%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .deck {
+      position: relative;
+      z-index: 1;
+      height: 100vh;
+      display: grid;
+      grid-template-rows: 1fr auto auto;
+      align-items: center;
+      justify-items: center;
+      padding: 1.25rem 1rem 0.75rem;
+    }
+
+    .slide {
+      width: var(--slide-w);
+      height: var(--slide-h);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(1.5rem, 3vw, 3rem);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(145deg, var(--surface) 0%, var(--surface-2) 100%);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      position: relative;
+      overflow: hidden;
+      animation: fadeIn 0.35s ease;
+    }
+
+    .slide.active { display: flex; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--warm));
+    }
+
+    .eyebrow {
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+
+    h1, h2 {
+      font-family: "Syne", sans-serif;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+    }
+
+    h1 {
+      font-size: clamp(2.4rem, 5.5vw, 4.2rem);
+      font-weight: 800;
+      max-width: 16ch;
+    }
+
+    h2 {
+      font-size: clamp(1.6rem, 3.2vw, 2.4rem);
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      max-width: 22ch;
+    }
+
+    .lead {
+      font-size: clamp(1rem, 1.6vw, 1.2rem);
+      color: var(--muted);
+      max-width: 52ch;
+      line-height: 1.55;
+      margin-top: 1rem;
+    }
+
+    .hero-metric {
+      display: flex;
+      gap: clamp(1rem, 3vw, 2.5rem);
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .metric {
+      background: var(--accent-dim);
+      border: 1px solid rgba(45, 212, 191, 0.25);
+      border-radius: 14px;
+      padding: 1.1rem 1.4rem;
+      min-width: 140px;
+    }
+
+    .metric.warm {
+      background: var(--warm-dim);
+      border-color: rgba(245, 158, 11, 0.28);
+    }
+
+    .metric .num {
+      font-family: "Syne", sans-serif;
+      font-size: clamp(2.2rem, 4vw, 3rem);
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .metric.warm .num { color: var(--warm); }
+
+    .metric .label {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 0.35rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+      gap: 1rem;
+      margin-top: 0.5rem;
+      width: 100%;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+      min-width: 0;
+    }
+
+    .card h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.45rem;
+      color: var(--text);
+    }
+
+    .card p, .card li {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .card ul {
+      list-style: none;
+      display: grid;
+      gap: 0.45rem;
+    }
+
+    .card li::before {
+      content: "→";
+      color: var(--accent);
+      margin-right: 0.45rem;
+    }
+
+    .card.highlight {
+      border-color: rgba(45, 212, 191, 0.35);
+      background: var(--accent-dim);
+    }
+
+    .card.warn {
+      border-color: rgba(251, 113, 133, 0.35);
+      background: rgba(251, 113, 133, 0.08);
+    }
+
+    .card.warn li::before { color: var(--danger); }
+
+    .flow {
+      display: flex;
+      align-items: stretch;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+    }
+
+    .flow-step {
+      flex: 1 1 140px;
+      min-width: 0;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.85rem;
+      position: relative;
+    }
+
+    .flow-step .step-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .flow-step strong {
+      display: block;
+      font-size: 0.92rem;
+      margin: 0.3rem 0 0.25rem;
+    }
+
+    .flow-step span {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      width: 100%;
+      margin-top: 0.25rem;
+    }
+
+    @media (max-width: 720px) {
+      .compare { grid-template-columns: 1fr; }
+    }
+
+    .compare-col h3 {
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+      color: var(--muted);
+    }
+
+    .compare-col.us h3 { color: var(--accent); }
+    .compare-col.them h3 { color: var(--warm); }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 1rem;
+    }
+
+    .tag {
+      font-size: 0.75rem;
+      padding: 0.35rem 0.65rem;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+    }
+
+    .links a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      border-bottom: 1px solid rgba(45, 212, 191, 0.35);
+      padding-bottom: 1px;
+    }
+
+    .links a:hover { color: var(--text); border-color: var(--text); }
+
+    .footer-bar {
+      width: var(--slide-w);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.65rem 0.25rem;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .progress {
+      flex: 1;
+      height: 4px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--warm));
+      transition: width 0.25s ease;
+    }
+
+    .controls {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    button {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 0.4rem 0.75rem;
+      font: inherit;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+
+    button:hover { border-color: var(--accent); color: var(--accent); }
+
+    .notes-toggle { opacity: 0.7; }
+    .notes-toggle.active { border-color: var(--warm); color: var(--warm); }
+
+    .speaker-notes {
+      width: var(--slide-w);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      margin-top: 0.25rem;
+    }
+
+    .speaker-notes.open {
+      max-height: 140px;
+      padding: 0.75rem 1rem;
+      overflow-y: auto;
+    }
+
+    .speaker-notes p {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .speaker-notes strong { color: var(--warm); font-weight: 600; }
+
+    .logo-mark {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .timing {
+      position: absolute;
+      bottom: 1.1rem;
+      right: 1.25rem;
+      font-size: 0.68rem;
+      color: rgba(143, 163, 184, 0.55);
+      letter-spacing: 0.06em;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .slide { animation: none; }
+      .progress-fill { transition: none; }
+    }
+
+    @media print {
+      body { overflow: visible; background: white; color: black; }
+      .deck { display: block; height: auto; padding: 0; }
+      .slide {
+        display: flex !important;
+        page-break-after: always;
+        width: 100%;
+        height: auto;
+        min-height: 90vh;
+        box-shadow: none;
+        border: 1px solid #ccc;
+        margin-bottom: 1rem;
+      }
+      .footer-bar, .speaker-notes { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck" id="deck">
+
+    <!-- SLIDE 1: Title (~30s) -->
+    <section class="slide active" data-note="Open with energy. You're not teaching a new methodology — you're introducing a product shape that's already live internally. ~30 seconds.">
+      <span class="logo-mark">Liatrio · Delivery Leaders</span>
+      <p class="eyebrow">September 2026 · 5‑minute overview</p>
+      <h1>FDE 2×4</h1>
+      <p class="lead">Our introductory Forward Deployed Engineer offering — two engineers embedded with one team for about four weeks to earn trust fast and expand into larger work.</p>
+      <div class="hero-metric">
+        <div class="metric"><div class="num">2</div><div class="label">Engineers embedded</div></div>
+        <div class="metric warm"><div class="num">4</div><div class="label">Weeks on the ground</div></div>
+        <div class="metric"><div class="num">→</div><div class="label">Foothold → scale</div></div>
+      </div>
+      <span class="timing">~30 sec</span>
+    </section>
+
+    <!-- SLIDE 2: Why now (~40s) -->
+    <section class="slide" data-note="Joshua's Flywheel WAM framing: the market is moving toward FDE. Cursor partnership + sales channels will bring these engagements. Carson's point: Cursor's FDE bootcamp basically described how we already work with customers. ~40 seconds.">
+      <span class="logo-mark">Context</span>
+      <p class="eyebrow">Why this, why now</p>
+      <h2>The market speaks FDE</h2>
+      <div class="grid-2">
+        <div class="card highlight">
+          <h3>Market shift</h3>
+          <p>Forward Deployed Engineer is the title that resonates with buyers today — builder embedded with the customer, shipping outcomes with agentic AI.</p>
+        </div>
+        <div class="card">
+          <h3>How they'll arrive</h3>
+          <ul>
+            <li>Cursor partnership pipeline</li>
+            <li>Direct sales channels</li>
+            <li>Introductory SOW, not a full transformation</li>
+          </ul>
+        </div>
+      </div>
+      <p class="lead" style="margin-top:1rem;font-size:0.95rem;">We're building the offering in public — not waiting for the first client SOW to figure out how to deliver it.</p>
+      <span class="timing">~40 sec</span>
+    </section>
+
+    <!-- SLIDE 3: What it is (~35s) -->
+    <section class="slide" data-note="Casey's original definition: two people, one client team, four to six weeks. Small on purpose — a foothold, not islanding for its own sake. Engagement Leader attached for expansion. ~35 seconds.">
+      <span class="logo-mark">The offering</span>
+      <p class="eyebrow">Product definition</p>
+      <h2>A small foothold, by design</h2>
+      <div class="flow">
+        <div class="flow-step">
+          <div class="step-label">Shape</div>
+          <strong>2 engineers</strong>
+          <span>Embedded with one client team. L8+ capability expected; not every Liatrian day one.</span>
+        </div>
+        <div class="flow-step">
+          <div class="step-label">Duration</div>
+          <strong>~4 weeks</strong>
+          <span>Sometimes cited as 4–6 weeks. Short enough to de-risk, long enough to ship.</span>
+        </div>
+        <div class="flow-step">
+          <div class="step-label">Outcome</div>
+          <strong>Real delivery</strong>
+          <span>Automate a workflow, solve the problem in front of the stakeholder — not a slide deck.</span>
+        </div>
+        <div class="flow-step">
+          <div class="step-label">Expansion</div>
+          <strong>Engagement Leader</strong>
+          <span>Owns relationship growth. The two engineers are not selling the next phase.</span>
+        </div>
+      </div>
+      <span class="timing">~35 sec</span>
+    </section>
+
+    <!-- SLIDE 4: Operating cadence (~50s) -->
+    <section class="slide" data-note="Joshua restated this for folks who stayed after Flywheel WAM: demo every couple days, meet stakeholder often, solve the actual problem, work out in the open. This is the muscle DLs can borrow even outside a 2x4 SOW. ~50 seconds — this is the heart of the talk.">
+      <span class="logo-mark">How it runs</span>
+      <p class="eyebrow">Operating model</p>
+      <h2>Demo often. Stay close. Ship visibly.</h2>
+      <div class="grid-2">
+        <div class="card highlight">
+          <h3>Cadence</h3>
+          <ul>
+            <li>Demo every couple of days</li>
+            <li>Meet the stakeholder often</li>
+            <li>Solve the problem in front of them</li>
+            <li>Work out in the open</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Robert's FDE principle</h3>
+          <p style="margin-top:0.25rem;">Build and show without asking permission first. Use working prototypes to sharpen requirements — demos over decks.</p>
+        </div>
+      </div>
+      <div class="tag-row">
+        <span class="tag">Tight feedback loops</span>
+        <span class="tag">Stakeholder in the loop</span>
+        <span class="tag">Small-batch shipping</span>
+        <span class="tag">Practice on Flywheel now</span>
+      </div>
+      <span class="timing">~50 sec</span>
+    </section>
+
+    <!-- SLIDE 5: Intentional differences (~45s) -->
+    <section class="slide" data-note="Casey was explicit: NO enablement during the short engagement — intentional, not the Liatrio way by default. Enablement comes after it scales. Contrast with our usual delivery model. ~45 seconds.">
+      <span class="logo-mark">What's different</span>
+      <p class="eyebrow">Not business as usual</p>
+      <h2>Intentional breaks from our default delivery</h2>
+      <div class="compare">
+        <div class="compare-col them">
+          <h3>Typical Liatrio engagement</h3>
+          <div class="card">
+            <ul>
+              <li>Larger team shape</li>
+              <li>Enablement woven throughout</li>
+              <li>Transformation over time</li>
+              <li>Engineers grow client capability</li>
+            </ul>
+          </div>
+        </div>
+        <div class="compare-col us">
+          <h3>FDE 2×4</h3>
+          <div class="card highlight">
+            <ul>
+              <li>Two engineers — small on purpose</li>
+              <li>Ship outcomes first; enablement later</li>
+              <li>Trust-earning foothold</li>
+              <li>EL owns expansion, not the pair</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <p class="lead" style="margin-top:0.85rem;font-size:0.9rem;">Small team risk is real — that's why the EL stays attached and the offering is scoped as an intro, not an island.</p>
+      <span class="timing">~45 sec</span>
+    </section>
+
+    <!-- SLIDE 6: Internal proof (~40s) -->
+    <section class="slide" data-note="Kevin + Jacob on Content Distribution / Pulse is the live reference. Casey rewrote sales + delivery kits Aug 27 from those learnings. FDE-3 Pulse triggers, Brain voice, CDN agent work — real greenfield, not a thought experiment. ~40 seconds.">
+      <span class="logo-mark">Proof point</span>
+      <p class="eyebrow">Learning in production</p>
+      <h2>We're already running one internally</h2>
+      <div class="grid-2">
+        <div class="card highlight">
+          <h3>Content Distribution · Pulse</h3>
+          <ul>
+            <li><strong>Jacob LeCoq + Kevin Jaris</strong> — internal FDE greenfield</li>
+            <li>Client stakeholders: Robert Kelly + Chris Blackburn (revenue)</li>
+            <li>Goal: automate outreach workflow using Pulse signals + Brain voice</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>What's come out of it</h3>
+          <ul>
+            <li>Pulse trigger ranking (FDE-3 spike)</li>
+            <li>Brain voice profiles for DM drafting (FDE-4)</li>
+            <li>Rewritten sales + delivery kits (Aug 27)</li>
+            <li>Operating lessons feeding the offering catalog</li>
+          </ul>
+        </div>
+      </div>
+      <span class="timing">~40 sec</span>
+    </section>
+
+    <!-- SLIDE 7: Why DLs care (~40s) -->
+    <section class="slide" data-note="Three DL talking points from your Slack post: this shape will show up through Cursor + sales; you may staff/scope/hand off; the operating muscle transfers to any engagement. ~40 seconds.">
+      <span class="logo-mark">For delivery leaders</span>
+      <p class="eyebrow">Why you should care</p>
+      <h2>Three things to carry into your accounts</h2>
+      <div class="grid-2">
+        <div class="card">
+          <h3>1 · Staffing &amp; handoffs</h3>
+          <p>This shape will show up — different team size on purpose. You may staff it, scope it, or inherit the expansion after the foothold lands.</p>
+        </div>
+        <div class="card">
+          <h3>2 · Portable operating muscle</h3>
+          <p>Demo cadence, stakeholder proximity, and visible shipping help on client work even when the SOW isn't labeled "2×4."</p>
+        </div>
+        <div class="card highlight">
+          <h3>3 · Pipeline awareness</h3>
+          <p>No client SOWs yet — but the internal run is hardening the kits. When deals arrive, we'll need L8+ engineers who can deliver <em>and</em> help refine the offering.</p>
+        </div>
+        <div class="card warn">
+          <h3>Not everyone, not yet</h3>
+          <p>Casey: expect a small delivery group at first that scales with demand. Cursor Forge / FDE bootcamp is part of the readiness path.</p>
+        </div>
+      </div>
+      <span class="timing">~40 sec</span>
+    </section>
+
+    <!-- SLIDE 8: Close (~30s) -->
+    <section class="slide" data-note="Close with links. Offer to go deeper on kits or internal Pulse work. Invite questions. Total ~5 min.">
+      <span class="logo-mark">Next steps</span>
+      <p class="eyebrow">Resources</p>
+      <h2>Go deeper</h2>
+      <div class="grid-2">
+        <div class="card highlight">
+          <h3>Sales &amp; delivery kits</h3>
+          <p>Source of truth for what we sell and how we deliver — updated with internal engagement learnings.</p>
+          <div class="links" style="margin-top:0.65rem;">
+            <a href="https://offerings.liatr.io/offerings/off_JReXDrinhL" target="_blank" rel="noopener">offerings.liatr.io → FDE 2×4</a>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Stay in the loop</h3>
+          <ul>
+            <li>#liatrio-offering-fde — offering development</li>
+            <li>#product-content-distribution — internal FDE work</li>
+            <li>Flywheel WAM — practice the cadence on internal work</li>
+          </ul>
+        </div>
+      </div>
+      <p class="lead" style="margin-top:1.1rem;">Questions? Happy to walk through the kits or the Pulse greenfield in more detail.</p>
+      <span class="timing">~30 sec · ~5 min total</span>
+    </section>
+
+    <div class="footer-bar">
+      <span id="slide-counter">1 / 8</span>
+      <div class="progress"><div class="progress-fill" id="progress" style="width:12.5%"></div></div>
+      <div class="controls">
+        <button type="button" id="prev" aria-label="Previous slide">← Prev</button>
+        <button type="button" id="next" aria-label="Next slide">Next →</button>
+        <button type="button" class="notes-toggle" id="notes-toggle" aria-label="Toggle speaker notes">Notes</button>
+      </div>
+    </div>
+
+    <div class="speaker-notes" id="speaker-notes" aria-live="polite">
+      <p id="note-text"><strong>Speaker note:</strong> Open with energy. You're not teaching a new methodology — you're introducing a product shape that's already live internally.</p>
+    </div>
+  </div>
+
+  <script>
+    const slides = [...document.querySelectorAll('.slide')];
+    const counter = document.getElementById('slide-counter');
+    const progress = document.getElementById('progress');
+    const noteText = document.getElementById('note-text');
+    const notesPanel = document.getElementById('speaker-notes');
+    const notesToggle = document.getElementById('notes-toggle');
+    let index = 0;
+    let notesOpen = false;
+
+    function show(i) {
+      index = Math.max(0, Math.min(i, slides.length - 1));
+      slides.forEach((s, n) => s.classList.toggle('active', n === index));
+      counter.textContent = `${index + 1} / ${slides.length}`;
+      progress.style.width = `${((index + 1) / slides.length) * 100}%`;
+      const note = slides[index].dataset.note || '';
+      noteText.innerHTML = note ? `<strong>Speaker note:</strong> ${note}` : '';
+    }
+
+    function next() { show(index + 1); }
+    function prev() { show(index - 1); }
+
+    document.getElementById('next').addEventListener('click', next);
+    document.getElementById('prev').addEventListener('click', prev);
+
+    notesToggle.addEventListener('click', () => {
+      notesOpen = !notesOpen;
+      notesPanel.classList.toggle('open', notesOpen);
+      notesToggle.classList.toggle('active', notesOpen);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); next(); }
+      if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+      if (e.key === 'n' || e.key === 'N') notesToggle.click();
+      if (e.key === 'Home') { e.preventDefault(); show(0); }
+      if (e.key === 'End') { e.preventDefault(); show(slides.length - 1); }
+    });
+
+    // Touch swipe
+    let touchStartX = 0;
+    document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+    document.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].screenX - touchStartX;
+      if (Math.abs(dx) > 50) dx < 0 ? next() : prev();
+    }, { passive: true });
+  </script>
+</body>
+</html>
