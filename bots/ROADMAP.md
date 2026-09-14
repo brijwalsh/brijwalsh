@@ -102,6 +102,31 @@ Then package the kit as:
 - Optional: a Forge module extending the same pattern for other
   Delivery Principals (Chelsea, Blair, Craig, Ron, etc.)
 
+## Fleet budget (v0.1)
+
+Replaces the informal "no new bots" rule that failed within hours
+of being stated (fleet went 0 → 3 in a weekend). The rule now has
+an enforcer instead of a stigma.
+
+- **Baseline:** 3 active Brian-owned skills (see
+  [`FLEET.md`](./FLEET.md)).
+- **Rate cap:** at most +1 new Brian-owned skill per ISO week.
+- **Replace-or-retire rule:** every net-new skill must move at
+  least one existing Brian-owned skill to the `Retired` table
+  before it ships.
+- **Reporter:** [`eod-drafter/SKILL.md`](./eod-drafter/SKILL.md) §5b
+  reads `FLEET.md` and appends a `Fleet:` line to every daily DM.
+  On Fridays it also appends a weekly minutes-saved rollup
+  (see [`eod-drafter/template.md`](./eod-drafter/template.md#friday-variant)).
+- **Escape hatch:** raising the cap is a normal PR against
+  `FLEET.md` with a real reason. Silent breaches (shipping without
+  a retirement) show up in Brian's DM the next morning as a
+  warning line.
+
+Curated / imported skills from `BriWalsh/cursor-user-skills` do
+**not** count against the cap; they are external inventory, not
+authored work.
+
 ## Anti-features — not on any roadmap
 
 Documenting these explicitly so nobody accidentally builds them later:
@@ -116,6 +141,9 @@ Documenting these explicitly so nobody accidentally builds them later:
   scraping, zero work leverage, infinite auth headache. Not this kit.
 - **Client-side auto-reply.** Never. Not even with approval.
   Not even in v0.9.
+- **A "no new bots" freeze without an enforcer.** Superseded by
+  [Fleet budget](#fleet-budget-v01) above. Rules that aren't
+  measured don't survive contact with an idle Sunday.
 
 ## How to promote a v0.2 feature
 

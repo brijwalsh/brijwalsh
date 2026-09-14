@@ -19,6 +19,11 @@ pick it up.
 
 ## v0.1 hard rules
 
+0. **Fleet budget applies.** At most +1 new Brian-owned skill per ISO
+   week, and every net-new skill must retire an existing one first.
+   Canonical inventory in [`FLEET.md`](./FLEET.md); the enforcer is
+   the daily fleet-count line the `eod-drafter` appends to Brian's
+   DM. Full policy in [`ROADMAP.md`](./ROADMAP.md#fleet-budget-v01).
 1. **All output goes to Brian's DM (`U0A0T8FV12B`).** No public channel, no
    client channel, no email. Ever.
 2. **No `#client-*` channel content leaves Slack MCP into a gateway.**
@@ -107,6 +112,10 @@ bash bots/eod-drafter/tests/test_clustering.sh
 bash bots/eod-drafter/tests/test_quarantine.sh
 bash bots/eod-drafter/tests/test_client_mapping.sh
 bash bots/eod-drafter/tests/test_redaction.sh
+
+# Fleet inventory — schema-guards bots/FLEET.md so eod-drafter §5b
+# keeps parsing the table cleanly
+bash bots/tests/test_fleet_parser.sh
 ```
 
 `eod-drafter`'s drafted EOD text itself is still untested because it's

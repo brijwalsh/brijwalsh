@@ -19,7 +19,46 @@ Tomorrow
 • ...
 Non-Forge   (optional, same rule)
 • <planned item>
+
+:file_cabinet: Fleet: <N>/<CAP> active, <shipped_this_week> shipped this week, <retired_this_week> retired.
+
+*Sent using* <@U093DJ468EN|Cursor>
 ```
+
+The fleet line is inserted **mechanically** by `eod-drafter/SKILL.md`
+§7b from [`../FLEET.md`](../FLEET.md); the LLM does not generate it.
+If it's ever off, fix `FLEET.md`, not the model prompt.
+
+### Friday variant
+
+On Fridays only, `eod-drafter/SKILL.md` §7c appends a weekly review
+after the sign-off. Same code-block, so Brian can copy the entire
+thing into a channel:
+
+```
+Today
+• ...
+Tomorrow
+• ...
+
+:file_cabinet: Fleet: 3/3 active, 0 shipped this week, 0 retired.
+
+*Sent using* <@U093DJ468EN|Cursor>
+
+:calendar: Weekly review — fleet minutes saved
+
+| Skill | Verdict | Min saved/week (est.) |
+|-------|---------|-----------------------|
+| eyes | kept | ~60 |
+| eod-drafter | kept | ~120 |
+| follow-up-radar | kept | ~30 |
+Total: ~210 min/week. Retired this week: 0. Shipped this week: 0.
+```
+
+The table is pulled from the "Brian-owned skills" table in
+`FLEET.md` (columns 1, 7, 6). Retired-this-week rows come from the
+`Retired` table on the same file. The total is the sum of column 6
+across active rows.
 
 ## Voice rules
 
