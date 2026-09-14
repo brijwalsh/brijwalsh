@@ -20,16 +20,17 @@ table.
 
 | ID | Target | Category | Due | Status | Evidence source | Notes |
 |----|--------|----------|-----|--------|-----------------|-------|
-| pdp-2026-w38-01 | Deliver directive-voice decision on Paul + Ron + Chelsea enGen staffing (thumb-up/thumb-down + role) | Directive voice | 2026-09-19 | in-progress | Slack `#the-staffing-conversation` (`C05GV2F8AJ0`) and Group DM `C0BV2NEV7U0` | Ron's Sep 1 interview notes + Chelsea's Sep 1 note that Kevin locks in on Cursor partnership if Natera MOVE progresses. |
-| pdp-2026-w38-02 | Schedule Kevin ↔ Chelsea sync as prerequisite for the enGen onsite (kickoff / VSM / chartering) | Directive voice | 2026-09-17 | pending | Slack DM to Chelsea (drafted in `bots/docs/chelsea-monday-logistics-dm.md`) | Depends on Chelsea's calendar. Sync must land before the onsite date is locked. |
+| pdp-2026-w38-01 | Deliver directive-voice decision on Paul + Ron + Chelsea enGen staffing (thumb-up/thumb-down + role) | Directive voice | 2026-09-19 | in-progress | Slack `#the-staffing-conversation` (`C05GV2F8AJ0`) and Group DM `C0BV2NEV7U0` | Ron's Sep 1 interview notes + Chelsea's Sep 1 note that Kevin locks in on Cursor partnership if Natera MOVE progresses. Sep 8 update: waiting on Andrew's confirmation of Lee Hopper 10/9 roll-off from Natera to unblock Kevin. |
+| pdp-2026-w38-03 | Confirm Sep 17 client meeting readiness with Chelsea by Tue/Wed team sync | Operating rhythm | 2026-09-16 | in-progress | Sep 11 Chelsea DM (`D0BHH740R7F` message `1789169732.652369`) + Tue/Wed 1hr Brian/Kevin/Ron/Chelsea team sync | Sep 17 is listen-first on the client side. Prep for optional-only intro. |
 
 ## Completed targets
 
-_(none yet — table exists so the parser has a target to find)_
+Rows shipped from Active to here when the evidence lands. Keep the
+audit trail — do not delete completed rows.
 
 | ID | Target | Completed | Evidence |
 |----|--------|-----------|----------|
-| — | — | — | — |
+| pdp-2026-w38-02 | Schedule Kevin ↔ Chelsea sync as prerequisite for the enGen onsite | 2026-09-11 | Brian's Sep 11 timeline DM to Chelsea confirmed the sync for Mon 2026-09-14. Message `1789169732.652369` in DM `D0BHH740R7F`. Fable 5.1's `ask Chelsea for that sync` directive was already satisfied 3 days before the recommendation reached Brian. |
 
 ## Schema
 
