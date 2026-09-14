@@ -5,10 +5,11 @@ Runs quarantine_lib.quarantine_verdict() (a transcription of SKILL.md
 \u00a73d) against fixtures/granola_meetings.json and checks each meeting's
 quarantined/dominant verdict against fixtures/expected_quarantine.json.
 
-Two of the eight fixtures (gr-1003, gr-1004) are documented gaps in the
-CURRENT SKILL.md -- this test asserts what SKILL.md actually does today,
-not what it should do. See the TODO(#eod-quarantine-gaps-0428) comments
-in the fixtures.
+Post-PR #10 (#eod-quarantine-gaps-0428): all eight fixtures now assert
+current SKILL.md behavior directly. The alias_hit signal added in PR
+#10 promoted gr-1003 (summary mentions contact@natera.com) and gr-1004
+(title "enGen QBR") from clear to quarantined; both fixture rows now
+carry an "alias_hit" signal string.
 """
 
 from __future__ import annotations

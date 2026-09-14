@@ -47,7 +47,7 @@
       "summary": "Team retro. Action item: reach out to contact@natera.com to reschedule the demo.",
       "next_steps": "Erin to email contact@natera.com with new demo times.",
       "granola_link": "https://notes.granola.ai/d/gr-1003",
-      "_case": "TODO(#eod-quarantine-gaps-0428): all-internal known_participants, no folder, title has no client stem \u2014 but summary/next_steps mention a client-domain email address (contact@natera.com). SKILL.md's four quarantine signals (participant email host, title stem, folder, empty-attendance fail-closed) never inspect summary/next_steps text, so this meeting is NOT quarantined by the CURRENT SKILL.md. Expected to flip to quarantined once #eod-quarantine-gaps-0428 adds content-based scanning of summary/next_steps."
+      "_case": "Post-PR #10: all-internal known_participants, no folder, title has no client stem \u2014 but summary/next_steps mention a client-domain email address (contact@natera.com). SKILL.md \u00a73d's fifth signal (alias_hit) scans title/summary/notes for built-in title aliases; `natera` (a default alias for natera.com) matches the substring inside `contact@natera.com` in the summary, so this meeting quarantines via alias_hit."
     },
     {
       "meeting_id": "gr-1004",
@@ -63,7 +63,7 @@
       "summary": "Internal prep session ahead of the quarterly business review.",
       "next_steps": "Finalize slide deck before Thursday.",
       "granola_link": "https://notes.granola.ai/d/gr-1004",
-      "_case": "TODO(#eod-quarantine-gaps-0428): all-internal known_participants, no folder set. SKILL.md's title_hit only checks `d.split('.')[0]` for each CLIENT_DOMAINS entry, i.e. the literal stems `natera` and `goengen` \u2014 NOT `engen`. A title containing `enGen` therefore does not match today, so this meeting is NOT quarantined by the CURRENT SKILL.md. This is the fixture referenced in the task brief as expected to flip once #eod-quarantine-gaps-0428 tightens the title-stem match to also catch the `enGen`/`engen` short form."
+      "_case": "Post-PR #10: all-internal known_participants, no folder set. SKILL.md's literal-stem title_hit still misses `enGen` (it only matches `natera`/`goengen`), but the fifth signal (alias_hit) case-insensitively scans title+summary+notes for built-in aliases. `enGen` is a default alias for `goengen.com`, so this meeting quarantines via alias_hit. This is the flagship enGen fixture from the original task brief."
     },
     {
       "meeting_id": "gr-1005",

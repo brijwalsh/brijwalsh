@@ -8,15 +8,29 @@ If SKILL.md's algorithm ever changes, this module (and the fixtures that
 depend on it) need to change too -- this file is not an independent
 reimplementation, it is the test harness's copy of the spec.
 
-Do not add signals here that SKILL.md doesn't have. Known gaps
-(documented per-fixture with a `TODO(#eod-quarantine-gaps-0428)` note)
-are intentionally left unfixed so the tests keep asserting CURRENT
-behavior, not aspirational behavior.
+Post-#eod-quarantine-gaps-0428 (PR #10) state: SKILL.md §3d now runs
+five OR-ed signals, not four. The fifth is the title-alias check
+(`alias_hit`), which scans title + summary + Granola notes for any
+`title_hint` in the built-in alias table (goengen.com -> enGen/EnGen,
+natera.com -> Natera/Panorama/Signatera/Prospera) extended by the
+optional $CLIENT_TITLE_ALIASES env var. That catches internal-only
+titles like "enGen QBR" and summaries that mention client domains
+without any client-domain attendee.
 """
 
 from __future__ import annotations
 
+import json
+import os
+
 DEFAULT_CLIENT_DOMAINS = ["natera.com", "goengen.com"]
+
+# Built-in marketing-name / product-name hints per client domain. Kept
+# in sync with the DEFAULT_TITLE_ALIASES table in SKILL.md §3d.
+DEFAULT_TITLE_ALIASES = {
+    "goengen.com": ["enGen", "EnGen"],
+    "natera.com": ["Natera", "Panorama", "Signatera", "Prospera"],
+}
 
 # Client-mapping test only: the short workstream key each client domain
 # maps to. This key is NOT part of SKILL.md's quarantine snippet (which
@@ -43,10 +57,50 @@ def matched_domains(email: str, client_domains) -> list:
     return [d for d in client_domains if h == d or h.endswith("." + d)]
 
 
-def quarantine_verdict(meeting: dict, client_domains=None) -> dict:
+def load_title_aliases(env: dict | None = None) -> dict:
+    """Merge the built-in DEFAULT_TITLE_ALIASES table with any extension
+    provided via $CLIENT_TITLE_ALIASES.
+
+    Transcribed from SKILL.md §3d `load_title_aliases()`. Malformed JSON
+    or wrong shape raises SystemExit — SKILL.md's contract is that a
+    broken DLP table fails preflight closed. Tests that want to exercise
+    the fail-closed path can pass `env={"CLIENT_TITLE_ALIASES": ...}`
+    and catch SystemExit.
+    """
+    if env is None:
+        env = os.environ
+    table = {d.lower(): list(hints) for d, hints in DEFAULT_TITLE_ALIASES.items()}
+    raw = (env.get("CLIENT_TITLE_ALIASES") or "").strip()
+    if not raw:
+        return table
+    try:
+        extra = json.loads(raw)
+    except (json.JSONDecodeError, TypeError, ValueError):
+        raise SystemExit(
+            "CLIENT_TITLE_ALIASES is not valid JSON — DM Brian and exit"
+        )
+    if not isinstance(extra, dict) or not all(
+        isinstance(k, str)
+        and isinstance(v, list)
+        and all(isinstance(h, str) for h in v)
+        for k, v in extra.items()
+    ):
+        raise SystemExit(
+            "CLIENT_TITLE_ALIASES must be "
+            '{"domain.com": ["Alias", ...]} — DM Brian and exit'
+        )
+    for domain, hints in extra.items():
+        key = domain.lower()
+        table.setdefault(key, [])
+        table[key].extend(hints)
+    return table
+
+
+def quarantine_verdict(meeting: dict, client_domains=None, env: dict | None = None) -> dict:
     """Returns dict with keys: quarantined (bool), dominant (str),
-    participant_hit, title_hit, folder_hit, unknown_attendance (bool each),
-    matched_domains (sorted list of client domains hit via participants).
+    participant_hit, title_hit, folder_hit, unknown_attendance,
+    alias_hit (bool each), matched_domains (sorted list of client domains
+    hit via participants).
 
     Transcribed from SKILL.md §3d.
     """
@@ -71,7 +125,25 @@ def quarantine_verdict(meeting: dict, client_domains=None) -> dict:
     # fail-closed: no participants + no folder = we don't know, so quarantine
     unknown_attendance = not participants and not folder_hit
 
-    client_hit = participant_hit or title_hit or folder_hit or unknown_attendance
+    # fifth signal: any title_hint from the alias table, case-insensitive,
+    # in title OR summary OR Granola notes. Catches "enGen Sync — Nov 2026"
+    # and internal-only "Prep for enGen QBR" (zero client attendees).
+    title_aliases = load_title_aliases(env=env)
+    haystack = " ".join([
+        title,
+        meeting.get("summary") or "",
+        meeting.get("notes") or "",
+    ]).lower()
+    alias_hit = any(
+        hint.lower() in haystack
+        for hints in title_aliases.values()
+        for hint in hints
+    )
+
+    client_hit = (
+        participant_hit or title_hit or folder_hit
+        or unknown_attendance or alias_hit
+    )
 
     dominant = "unknown"
     if client_hit:
@@ -85,6 +157,10 @@ def quarantine_verdict(meeting: dict, client_domains=None) -> dict:
                     for p in participants
                 )
                 or d.split(".")[0] in title.lower()
+                or any(
+                    hint.lower() in haystack
+                    for hint in title_aliases.get(d.lower(), [])
+                )
             ),
             "unknown",
         )
@@ -104,6 +180,7 @@ def quarantine_verdict(meeting: dict, client_domains=None) -> dict:
         "title_hit": title_hit,
         "folder_hit": folder_hit,
         "unknown_attendance": unknown_attendance,
+        "alias_hit": alias_hit,
         "matched_domains": all_matched,
     }
 
