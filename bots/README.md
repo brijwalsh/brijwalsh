@@ -82,6 +82,20 @@ promoted), configure the Cursor Cloud Agents dashboard — secrets,
 schedules, first-run smoke tests — per
 [`docs/cloud-agent-setup.md`](./docs/cloud-agent-setup.md).
 
+## Adjacent artifacts (not skills, but part of the pattern)
+
+- [`FLEET.md`](./FLEET.md) — canonical Brian-owned skill inventory
+  + budget cap.
+- [`docs/pdp-evidence-targets.md`](./docs/pdp-evidence-targets.md) —
+  dated, categorized PDP evidence targets `eod-drafter` surfaces
+  daily.
+- [`docs/gateway-matrix-pov.md`](./docs/gateway-matrix-pov.md) —
+  Brian's client-facing POV rows for Paul Henson's AI Gateway
+  evaluation matrix.
+- [`docs/chelsea-monday-logistics-dm.md`](./docs/chelsea-monday-logistics-dm.md)
+  — template + this-week draft for Brian's Monday roll-up DM to
+  Chelsea.
+
 ## Sequenced roll-out
 
 1. **This weekend** — ship [`eyes/`](./eyes/SKILL.md) v0.1. Weekend build,
