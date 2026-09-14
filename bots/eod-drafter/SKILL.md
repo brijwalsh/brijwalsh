@@ -48,6 +48,12 @@ the draft. Brian edits and reposts to the target channel himself.
 - On Fridays, append a weekly minutes-saved rollup after the sign-off
   (§7c).
 
+**Also in scope for v0.1** (added 2026-09-14 per human-actions-first change):
+- Read [`../docs/pdp-evidence-targets.md`](../docs/pdp-evidence-targets.md)
+  and surface unmet targets in the "Your 3 for tomorrow" list (§5c).
+- Restructure the DM into a two-part send: parent message = human
+  actions first (§7e), thread reply = full EOD shipping log (§7d).
+
 ## Non-negotiables
 
 - **Draft only.** Output goes to Brian's DM. Never posts to `#project-*`,
@@ -425,6 +431,12 @@ Rules the serializer must enforce, in order:
 If any of those rules would need to be relaxed for a specific draft,
 that's a v0.2 discussion, not a runtime override.
 
+Append the surfaced PDP evidence targets from §5c to the same user
+prompt (see [`PROMPT.md`](./PROMPT.md) for the envelope shape). They
+are trusted input (not third-party text), so no quarantine — but they
+still sit inside `<pdp_evidence_targets>` tags for prompt-injection
+uniformity.
+
 ## 5b. Fleet snapshot (mechanical, no LLM)
 
 Read [`../FLEET.md`](../FLEET.md) and compute the fleet snapshot the
@@ -479,6 +491,55 @@ turns the Fleet line into a warning marker in §7b:
 If the fleet parser threw and `fleet is None`, the line is omitted
 entirely rather than faked. The point of the line is honest
 visibility.
+
+## 5c. PDP evidence targets (mechanical, no LLM)
+
+Read [`../docs/pdp-evidence-targets.md`](../docs/pdp-evidence-targets.md)
+and pick the targets that should influence tomorrow's plan. Runs in
+parallel with §5b — no LLM, no gateway call, pure file parse.
+
+```python
+PDP_PATH = os.path.join(os.path.dirname(__file__),
+                        "..", "docs", "pdp-evidence-targets.md")
+
+def parse_pdp(path):
+    # Find H2 "## Active targets", take the first pipe-table below it.
+    # Columns: ID | Target | Category | Due | Status | Evidence source | Notes
+    # Returns list[dict], or [] if file/table missing (non-fatal).
+    ...
+
+def surface_targets(rows, now_ct):
+    today = now_ct.date()
+    horizon = today + timedelta(days=7)
+    def keep(r):
+        return (
+            r["Status"].lower() in {"pending", "in-progress", "blocked"}
+            and date.fromisoformat(r["Due"]) <= horizon
+        )
+    hits = [r for r in rows if keep(r)]
+    # overdue first, then earliest Due, then ID ascending
+    def sort_key(r):
+        d = date.fromisoformat(r["Due"])
+        return (d >= today, d, r["ID"])
+    return sorted(hits, key=sort_key)[:5]
+
+try:
+    pdp_rows = parse_pdp(PDP_PATH)
+    pdp_surfaced = surface_targets(pdp_rows, now_ct)
+except (FileNotFoundError, ValueError) as exc:
+    log(f"pdp targets skipped: {exc}")
+    pdp_rows = []
+    pdp_surfaced = []
+```
+
+`pdp_surfaced` is fed into two places downstream:
+
+1. §5 — added as a fourth XML envelope in the user prompt so the
+   LLM can factor targets into the Tomorrow bullets and the
+   TOP_3_HUMAN_ACTIONS list.
+2. §7e — mechanically joined with the LLM's TOP_3 output so
+   overdue targets can't be silently dropped by the model. The
+   skill has the final say on which 3 land in the parent DM.
 
 ## 6. Call the gateway
 
@@ -571,18 +632,126 @@ partial or fabricated one.
 
 Non-Friday days: no addendum. This section fires exactly once a week.
 
-## 7d. Assemble the DM body
+## 7d. Assemble the thread-reply body (full shipping log)
 
-The final message body Slack receives is:
+The full EOD draft — Today / Tomorrow / fleet line / optional Friday
+review — is the **thread reply**, not the parent DM. Body:
 
 ```
-<LLM draft with fleet line inserted per §7b>
+<LLM draft, TOP_3 section split off in §7e, with fleet line inserted per §7b>
 <if Friday: blank line + §7c weekly review block>
 ```
 
 Never let the LLM produce the fleet line or the weekly review — they
 are trusted, mechanical, computed here. This is the whole reason
 they exist.
+
+## 7e. Compose the parent DM (human actions first)
+
+Fable 5.1's rule: the daily DM leads with the three human actions
+Brian needs to take, not the shipping log. The DM has two parts:
+
+- **Parent** = "Your 3 for tomorrow" list.
+- **Thread reply** = §7d full shipping log.
+
+### Extracting TOP_3 from the LLM output
+
+The LLM was instructed (see [`PROMPT.md`](./PROMPT.md)) to emit two
+sections separated by an exact literal marker `---TOP_3_HUMAN_ACTIONS---`.
+Split on the first occurrence of that marker:
+
+```python
+DRAFT_END_MARKER = "---TOP_3_HUMAN_ACTIONS---"
+
+def split_output(llm_text):
+    if DRAFT_END_MARKER in llm_text:
+        draft, top3 = llm_text.split(DRAFT_END_MARKER, 1)
+        return draft.strip(), top3.strip()
+    return llm_text.strip(), ""
+
+full_draft_body, llm_top3_raw = split_output(llm_output)
+```
+
+The `full_draft_body` flows into §7a → §7b → §7d as before. The
+`llm_top3_raw` is a list of ~3 bullets, one per line.
+
+### Merging LLM output with PDP targets
+
+Overdue and due-tomorrow PDP targets from §5c always take priority
+over LLM-selected bullets. Dedup is fingerprint-based (lowercased
+alnum-only) so a PDP line and its LLM twin — same target, different
+formatting — collapse to one entry. Full test coverage in
+[`tests/test_top3_split.py`](./tests/test_top3_split.py):
+
+```python
+def normalize(s):
+    return re.sub(r"[^a-z0-9]+", "", s.lower())
+
+def target_of(line):
+    line = re.sub(r"^:warning:\s*", "", line)
+    return re.sub(r"\s*\(due \d{4}-\d{2}-\d{2}, evidence:.*\)\s*$",
+                  "", line).strip()
+
+def already_present(candidate, existing):
+    cand = normalize(target_of(candidate))
+    if not cand: return True
+    for line in existing:
+        cur = normalize(target_of(line))
+        if cand == cur: return True
+        if len(cand) >= 20 and cand in cur: return True
+        if len(cur) >= 20 and cur in cand: return True
+    return False
+
+def to_action_line(t):
+    prefix = ":warning: " if date.fromisoformat(t["Due"]) < today else ""
+    return f"{prefix}{t['Target']} (due {t['Due']}, evidence: {t['Evidence source']})"
+
+overdue  = [t for t in pdp_surfaced
+            if date.fromisoformat(t["Due"]) < today]
+due_soon = [t for t in pdp_surfaced
+            if today <= date.fromisoformat(t["Due"]) <= today + timedelta(days=1)]
+later    = [t for t in pdp_surfaced
+            if date.fromisoformat(t["Due"]) > today + timedelta(days=1)]
+
+llm_bullets = [re.sub(r"^[0-9]+[.)]\s*|^[-•*]\s*", "", ln.strip())
+               for ln in llm_top3_raw.splitlines() if ln.strip()]
+
+top3 = []
+for t in overdue + due_soon:
+    if len(top3) >= 3: break
+    line = to_action_line(t)
+    if not already_present(line, top3): top3.append(line)
+for b in llm_bullets:
+    if len(top3) >= 3: break
+    if not already_present(b, top3): top3.append(b)
+for t in later:
+    if len(top3) >= 3: break
+    line = to_action_line(t)
+    if not already_present(line, top3): top3.append(line)
+```
+
+If `len(top3) == 0` (clean run with no PDP targets, no LLM
+suggestions), the parent DM says exactly:
+
+```
+:bullseye: Your 3 for tomorrow
+_No open targets and no Tomorrow bullets — pick your own top 3. Full draft in thread if there is one._
+```
+
+### Parent DM format
+
+```
+:bullseye: *Your 3 for tomorrow — <date>*
+
+1. <top3[0]>
+2. <top3[1]>
+3. <top3[2]>
+
+_Full EOD draft in thread — copy from there to repost._
+```
+
+If `len(top3) < 3`, emit only the numbered lines that exist; do not
+pad with placeholder bullets. The point is signal, not shape.
 
 ## 8. DM the draft
 
@@ -593,24 +762,61 @@ still apply (client quarantine, gateway required, no direct-provider
 fallback).
 
 **Clean run.** If every cluster was empty after §4, there is no draft
-and §6 was skipped. DM Brian one line and exit. Slack-only. Do not
-call the gateway to confirm an empty day. `HH:MM` is current time in
-`America/Chicago`:
+and §6 was skipped. Do **not** call the gateway to confirm an empty
+day. But the DM still ships — because PDP evidence targets can be
+overdue on a day with zero cross-tool activity, and Fable's whole
+point is that human actions come first.
+
+If §5c surfaced any targets, the clean-run parent DM is:
 
 ```
-:draft-ai-gateway: no EOD-worthy activity today, HH:MM CT. Skipping the draft.
+:bullseye: *Your 3 for tomorrow — <date>*
+
+1. <target 1>
+2. <target 2>
+3. <target 3>
+
+_No shipping activity today._
+```
+
+If §5c also came up empty, one heartbeat line is enough:
+
+```
+:draft-ai-gateway: no EOD-worthy activity today, HH:MM CT. Skipping the draft. No open PDP targets.
 ```
 
 Preflight failures (missing secret, MCP unavailable, gateway 5xx) still
-use the existing "DM Brian and exit" path. This heartbeat is only for
-a run that completed and found nothing.
+use the existing "DM Brian and exit" path.
 
-Otherwise, send the §7d assembled body:
+**Normal path** — send two messages:
+
+**Step 1: Parent DM** (§7e human-actions-first summary):
 
 ```yaml
 tool: slack_send_message
 args:
   channel_id: "U0A0T8FV12B"
+  message: |
+    :bullseye: *Your 3 for tomorrow — <date>*
+
+    1. <top3[0]>
+    2. <top3[1]>
+    3. <top3[2]>
+
+    _Full EOD draft in thread — copy from there to repost._
+```
+
+Capture the returned `ts` from `slack_send_message`. Slack's MCP
+returns it as `message.ts` or the top-level `ts` depending on
+transport; grab whichever is present.
+
+**Step 2: Thread reply** (§7d full shipping log):
+
+```yaml
+tool: slack_send_message
+args:
+  channel_id: "U0A0T8FV12B"
+  thread_ts: "<ts from step 1>"
   message: |
     :draft-ai-gateway: *EOD draft — <date>*
 
@@ -618,13 +824,18 @@ args:
     <the §7d assembled body — LLM draft + fleet line + optional Friday review>
     ```
 
-    _v0.1 — auto-drafted, gateway: <gateway_name>. Edit above and repost yourself._
+    _v0.1 — auto-drafted, gateway: <gateway_name>. Edit the code block above and repost yourself._
 ```
 
 Use a code block wrapper so Slack doesn't render the draft's internal
-Slack markdown until Brian copies it out. The fleet line and Friday
-review live inside the same code block so they travel with the draft
-into whatever channel Brian reposts to.
+markdown until Brian copies it out. The fleet line and Friday review
+live inside the same code block so they travel with the draft into
+whatever channel Brian reposts to.
+
+If step 2 fails (Slack transient), the parent DM already landed and
+Brian has the top-3 — safe to log and exit rather than retry both.
+The gateway call already happened; retrying it would double-count in
+dogfooding data.
 
 ## 9. Guardrails
 

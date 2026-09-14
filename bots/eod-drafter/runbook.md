@@ -52,12 +52,31 @@ Rotation automation is v0.2 in [`../ROADMAP.md`](../ROADMAP.md).
    cluster-mapping table in `SKILL.md §4`.
 4. Once it reads like you, enable the schedule.
 
+## DM shape (v0.1 human-actions-first)
+
+The daily send is two Slack messages, not one:
+
+1. **Parent** — `:bullseye: *Your 3 for tomorrow — <date>*` followed
+   by up to three numbered lines. Sourced from
+   [`../docs/pdp-evidence-targets.md`](../docs/pdp-evidence-targets.md)
+   (§5c) plus the LLM's TOP_3 output. Overdue PDP targets always win
+   a slot.
+2. **Thread reply** — the full EOD draft (Today / Tomorrow / fleet
+   line / optional Friday review) in a code fence, ready to copy into
+   `#project-*` for the channel repost.
+
+If a PDP target is overdue, its line in the parent DM is prefixed
+with `:warning:`. Complete it in
+[`../docs/pdp-evidence-targets.md`](../docs/pdp-evidence-targets.md)
+by moving the row to the Completed table.
+
 ## What v0.1 explicitly does not do
 
 - Auto-create `#draft-eods` (public-by-default = client-leak risk; drafts
   go to your DM instead)
 - Persist `friction.jsonl` across runs (VM-ephemeral)
-- Emit a Friday weekly friction summary
+- Emit a Friday weekly gateway-friction summary (the Friday minutes-
+  saved fleet rollup ships in `SKILL.md §7c` — different thing)
 - Listen for `/eod-friction` replies
 - Retry a 5xx gateway
 - Send client-domain meeting summaries or next-steps to any LLM

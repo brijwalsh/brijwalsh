@@ -116,6 +116,12 @@ bash bots/eod-drafter/tests/test_redaction.sh
 # Fleet inventory — schema-guards bots/FLEET.md so eod-drafter §5b
 # keeps parsing the table cleanly
 bash bots/tests/test_fleet_parser.sh
+
+# PDP evidence targets — same schema guard for eod-drafter §5c
+bash bots/tests/test_pdp_parser.sh
+
+# eod-drafter §7e — TOP_3 split + merge dedup
+bash bots/eod-drafter/tests/test_top3_split.sh
 ```
 
 `eod-drafter`'s drafted EOD text itself is still untested because it's

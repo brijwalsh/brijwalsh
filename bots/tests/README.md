@@ -22,6 +22,13 @@ bash bots/eod-drafter/tests/test_redaction.sh
 # FLEET.md schema — proves the parser eod-drafter §5b promises still
 # matches what's in bots/FLEET.md (headers, active rows, dates)
 bash bots/tests/test_fleet_parser.sh
+
+# pdp-evidence-targets.md schema — same idea, guards eod-drafter §5c
+bash bots/tests/test_pdp_parser.sh
+
+# eod-drafter §7e — LLM-output split + PDP+LLM merge (dedup, cap,
+# overdue priority)
+bash bots/eod-drafter/tests/test_top3_split.sh
 ```
 
 `eod-drafter`'s drafted EOD text is still untested because it's
