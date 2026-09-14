@@ -142,6 +142,21 @@ if ! gh auth status >/dev/null 2>&1; then
   fail "'gh auth status' did not return OK. Run 'gh auth login' first."
 fi
 
+# Cloud Agent VMs boot without ~/.ssh populated, so the git@github.com: clone
+# URLs below fail with "Permission denied (publickey)" unless git is told to
+# use gh's HTTPS token instead. `gh auth setup-git` installs a
+# `credential.https://github.com.helper` config plus a `url.insteadOf` rewrite
+# that maps git@github.com: -> the token URL. Idempotent; safe on both fresh
+# VMs (no-op if the config already matches) and on developer laptops that
+# already have SSH keys (the SSH remote still works — the rewrite only
+# activates when git falls back to HTTPS). Runs even in --dry-run because
+# it's config-only, never touches the working tree, and unblocks the
+# subsequent clone steps that dry-run mode still prints.
+log "Configuring git for gh HTTPS token auth (gh auth setup-git)..."
+if ! gh auth setup-git >/dev/null 2>&1; then
+  fail "'gh auth setup-git' failed. Check that 'gh' has git credential-helper permissions."
+fi
+
 # Sanity check: bots/ must exist relative to CWD-independent repo layout.
 # This is a read-only check, safe even in --dry-run.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
