@@ -4,6 +4,30 @@ Extracted from real EOD posts across `#liatrio-forge`, `#project-marketing-dashb
 and `#project-ai-gateway`. The drafter must produce output that looks like it
 was written by Brian, not by an LLM defaulting to bland structure.
 
+## How the DM is shaped (v0.1 human-actions-first)
+
+The daily DM is **two messages**, sent to `U0A0T8FV12B` in this order
+(see `SKILL.md` §7e + §8):
+
+1. **Parent** — "Your 3 for tomorrow." Signal-only, no shipping log.
+   This is what Brian sees first when the DM lights up his phone. If
+   his manager Ryan would care, it's up here.
+2. **Thread reply** — the full Today / Tomorrow / fleet / (Friday
+   review) block, in a code fence, ready to copy into whatever
+   channel it belongs in.
+
+```
+:bullseye: *Your 3 for tomorrow — 2026-09-15*
+
+1. Deliver directive-voice decision on Paul + Ron + Chelsea enGen staffing (due 2026-09-19, evidence: #the-staffing-conversation)
+2. Finish review and land Anmol's CI quality-gate <https://…|#53>
+3. Push the infra <https://…|#1> multi-model review findings to resolution with Anmol
+
+_Full EOD draft in thread — copy from there to repost._
+```
+
+The thread reply contains everything below.
+
 ## Structure
 
 ```
